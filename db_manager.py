@@ -117,26 +117,8 @@ class DatabaseManager:
     #  Seed Data
     # ------------------------------------------------------------------ #
     def seed_dummy_data(self) -> None:
-        """Insert one camera model and one client ONLY when tables are empty."""
-        cursor = self.conn.cursor()
-
-        cursor.execute("SELECT COUNT(*) FROM camera_models;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO camera_models (model_name, equipment_designation, equipment_nature, category, sub_category) "
-                "VALUES (?, ?, ?, ?, ?);",
-                ("Hikvision 2MP Dome", "Camera", "Surveillance", "Indoor", "Dome"),
-            )
-
-        cursor.execute("SELECT COUNT(*) FROM clients;")
-        if cursor.fetchone()[0] == 0:
-            cursor.execute(
-                "INSERT INTO clients (full_name, doc_number, phone) "
-                "VALUES (?, ?, ?);",
-                ("John Doe", "12345", "+1-555-0100"),
-            )
-
-        self.conn.commit()
+        """Production: No dummy data seeded."""
+        pass
 
     # ------------------------------------------------------------------ #
     #  Queries & Actions

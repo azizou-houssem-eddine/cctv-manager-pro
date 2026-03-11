@@ -101,7 +101,13 @@ TRANSLATIONS = {
         'client_updated': 'Client mis à jour avec succès.',
         'validation_error': 'Nom Complet et N° de Document sont requis!',
         'assignment_success': 'Caméra(s) assignée(s) avec succès.',
-        'pdf_generated': 'Dossier généré avec succès.'
+        'pdf_generated': 'Dossier généré avec succès.',
+        'maintenance': 'Maintenance',
+        'clear_db': 'Vider la Base de Données',
+        'confirm_title': 'Confirmation',
+        'confirm_clear_msg': 'Voulez-vous vraiment supprimer TOUTES les données ? Cette action est irréversible.',
+        'db_cleared': 'Succès',
+        'db_cleared_msg': 'La base de données a été vidée.',
     },
     'ar': {
         'nav_inventory': 'المخزون',
@@ -662,6 +668,16 @@ class SettingsInterface(QWidget):
         self.langLayout.addLayout(h)
         self.vBoxLayout.addWidget(self.langCard)
 
+        # Maintenance Card
+        self.maintCard = CardWidget(self)
+        self.maintLayout = QVBoxLayout(self.maintCard)
+        self.maintTitle = SubtitleLabel(t('maintenance'), self.maintCard)
+        self.maintLayout.addWidget(self.maintTitle)
+        self.btnClearDb = PrimaryPushButton(t('clear_db'), self.maintCard)
+        self.btnClearDb.clicked.connect(self.confirm_clear_db)
+        self.maintLayout.addWidget(self.btnClearDb)
+        self.vBoxLayout.addWidget(self.maintCard)
+
         # Mode Card
         self.inputCard = CardWidget(self)
         self.inputLayout = QVBoxLayout(self.inputCard)
@@ -704,8 +720,8 @@ class SettingsInterface(QWidget):
         self.catNature.setPlaceholderText(t('equip_nature'))
         self.catCat.setPlaceholderText(t('category'))
         self.catSub.setPlaceholderText(t('sub_category'))
-        self.btnAddModel.setText(t('add_model'))
-        self.regTitle.setText(t('registered_models'))
+        self.btnClearDb.setText(t('clear_db'))
+        self.maintTitle.setText(t('maintenance'))
         self.catTree.setHorizontalHeaderLabels([t('id'), t('equip_desig'), t('equip_nature'), t('int_model_name'), t('category'), t('sub_category')])
         self.refresh_catalog_table()
 
@@ -736,6 +752,16 @@ class SettingsInterface(QWidget):
             self.catTree.setItem(r, 3, QTableWidgetItem(str(m["model_name"])))
             self.catTree.setItem(r, 4, QTableWidgetItem(str(m.get("category", ""))))
             self.catTree.setItem(r, 5, QTableWidgetItem(str(m.get("sub_category", ""))))
+
+    def confirm_clear_db(self):
+        w = MessageBox(t('confirm_title'), t('confirm_clear_msg'), self.window())
+        if w.exec():
+            if self.db.clear_database():
+                self.refresh_catalog_table()
+                if hasattr(self.window(), 'inventoryInterface'): self.window().inventoryInterface.refresh_scanner_models()
+                InfoBar.success(t('db_cleared'), t('db_cleared_msg'), duration=2000, parent=self.window())
+            else:
+                InfoBar.error("Error", "Could not clear database", duration=2000, parent=self.window())
 
 class MainWindow(FluentWindow):
     def __init__(self):
