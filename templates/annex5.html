@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الملحق الخامس - Annex 5</title>
+    <style>
+        @page { size: A4; margin: 10mm; }
+        body { font-family: 'Times New Roman', serif; line-height: 1.5; color: #000; margin: 0; padding: 0; font-size: 14px; }
+        .page-border { border: 2px solid #000; padding: 15px; box-sizing: border-box; min-height: 275mm; position: relative; }
+        .header { text-align: center; margin-bottom: 15px; }
+        .header-top { font-size: 14px; margin-bottom: 10px; font-weight: bold; }
+        .main-title { font-size: 16px; margin-top: 10px; text-decoration: underline; text-underline-offset: 4px; font-weight: bold; }
+        
+        .section { margin-bottom: 5px; }
+        .field { margin: 8px 0; display: flex; align-items: baseline; }
+        .field .label { font-weight: bold; display: inline-block; white-space: nowrap; margin-left: 10px; }
+        .field .value { display: inline-block; flex-grow: 1; padding: 0 5px; font-weight: normal; }
+        
+        .columns { display: flex; justify-content: space-between; gap: 15px; margin: 8px 0; }
+        .col { flex: 1; display: flex; align-items: baseline; }
+        .col .label { font-weight: bold; white-space: nowrap; margin-left: 10px; }
+        .col .value { flex-grow: 1; font-weight: normal; }
+        
+        .signature-section { margin-top: 30px; text-align: right; }
+        .stamp-box { text-align: center; margin-top: 30px; font-weight: bold; width: 250px; display: inline-block; min-height: 120px; }
+        
+        .notes { font-size: 11px; margin-top: 30px; border-top: 1px solid #000; padding-top: 10px; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <div class="page-border">
+        <div class="header">
+            <div class="header-top">الملحق الخامس<br>الجمهورية الجزائرية الديمقراطية الشعبية<br>وزارة الداخلية والجماعات المحلية</div>
+            <div class="main-title">استمارة معلومات خاصة بطالب رخصة اقتناء تجهيزات حساسة</div>
+        </div>
+
+        <div class="section">
+            <div class="field" style="margin-bottom: 10px;">
+                <span class="label">أنا الممضي أسفله،</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">هوية الطالب (1) :</span> 
+                <span class="value">{{ client.display_name }}</span>
+            </div>
+            
+            <div class="columns">
+                <div class="col" style="flex: 1.2;">
+                    <span class="label">ابن :</span> 
+                    <span class="value">{{ client.father_name }}</span>
+                </div>
+                <div class="col" style="flex: 1;">
+                    <span class="label">و :</span> 
+                    <span class="value">{{ client.mother_name }}</span>
+                </div>
+            </div>
+            
+            <div class="field">
+                <span class="label">المولود (ة) في :</span> 
+                <span class="value">{{ client.dob }} بـ {{ client.pob }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">العنوان (2) :</span> 
+                <span class="value">{{ client.address }}، {{ client.city }}</span>
+            </div>
+            
+            <div class="columns">
+                <div class="col" style="flex: 1.5;">
+                    <span class="label">بطاقة التعريف الوطنية رقم :</span> 
+                    <span class="value">{{ client.doc_number }}</span>
+                </div>
+                <div class="col" style="flex: 1.2;">
+                    <span class="label">الصادرة عن :</span> 
+                    <span class="value">{{ client.doc_issuer }}</span>
+                </div>
+                <div class="col" style="flex: 1;">
+                    <span class="label">بتاريخ :</span> 
+                    <span class="value">{{ client.doc_issue_date }}</span>
+                </div>
+            </div>
+
+            <div class="columns">
+                <div class="col" style="flex: 1.5;">
+                    <span class="label">جواز سفر رقم :</span> 
+                    <span class="value"></span>
+                </div>
+                <div class="col" style="flex: 1.2;">
+                    <span class="label">الصادر عن :</span> 
+                    <span class="value"></span>
+                </div>
+            </div>
+            
+            <div class="columns">
+                <div class="col" style="flex: 1.2;">
+                    <span class="label">تاريخ الإصدار :</span> 
+                    <span class="value"></span>
+                </div>
+                <div class="col" style="flex: 1.5;">
+                    <span class="label">تاريخ انتهاء مدة الصلاحية :</span> 
+                    <span class="value"></span>
+                </div>
+            </div>
+
+            <div class="field">
+                <span class="label">الجنسية :</span> 
+                <span class="value">{{ client.nationality }}</span>
+            </div>
+            
+            <div class="columns">
+                <div class="col" style="flex: 1.5;">
+                    <span class="label">بصفتي مسيرا للشركة :</span> 
+                    <span class="value">{{ client.company_name }}</span>
+                </div>
+                <div class="col" style="flex: 1;">
+                    <span class="label">الكائنة بـ :</span> 
+                    <span class="value">{{ client.company_hq }}</span>
+                </div>
+            </div>
+            
+            <div class="columns">
+                <div class="col">
+                    <span class="label">رقم الهاتف :</span> 
+                    <span class="value">{{ client.phone }}</span>
+                </div>
+                <div class="col">
+                    <span class="label">الفاكس :</span> 
+                    <span class="value">{{ client.fax }}</span>
+                </div>
+                <div class="col">
+                    <span class="label">البريد الالكتروني :</span> 
+                    <span class="value">{{ client.email }}</span>
+                </div>
+            </div>
+            
+            <div class="field">
+                <span class="label">إسم ولقب المساهمين :</span> 
+                <span class="value">{{ client.shareholders or "" }}</span>
+            </div>
+        </div>
+
+        <div class="section" style="margin-top: 20px; line-height: 1.8; font-weight: bold;">
+            أطلب رخصة اقتناء تجهيزات حساسة.<br>
+            يتعهد الممضي أسفله بشرفه أنّ المعلومات المذكورة في الاستمارة صحيحة.
+        </div>
+
+        <div class="signature-section">
+            حرر في <span style="display:inline-block; min-width:80px; text-align:center;">{{ client.city }}</span> بـ <span style="display:inline-block; min-width:80px; text-align:center;">{{ today_date }}</span><br>
+            <div class="stamp-box">
+                (الختم والإمضاء)
+            </div>
+        </div>
+
+        <div class="notes">
+            1 - اذكر أسماء و ألقاب أو الغرض الاجتماعي لطالب الرخصة.<br>
+            2 - حدد العنوان الشخصي أو عنوان المقر الاجتماعي لطالب الرخصة.
+        </div>
+    </div>
+</body>
+</html>

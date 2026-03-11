@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>الملحق الأول - Annex 1</title>
+    <style>
+        @page { size: A4; margin: 10mm; }
+        body { font-family: 'Times New Roman', serif; line-height: 1.4; color: #000; margin: 0; padding: 0; font-size: 13px; }
+        .page-border { border: 2px solid #000; padding: 15px; box-sizing: border-box; min-height: 275mm; position: relative; }
+        .header { text-align: center; margin-bottom: 5px; }
+        .official-header { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 10px; border-bottom: 1px solid #000; padding-bottom: 5px; }
+        .form-title { font-weight: bold; font-size: 16px; margin: 5px 0; }
+        .country-title { font-weight: bold; font-size: 14px; margin: 5px 0; }
+        
+        .req-title { font-weight: bold; margin: 15px 0 10px 0; text-align: center; font-size: 14px; }
+        .req-subtitle { display: flex; justify-content: center; gap: 50px; font-weight: bold; margin-bottom: 15px; }
+        
+        .section { margin-bottom: 10px; }
+        .field { margin: 8px 0; display: flex; align-items: baseline; position: relative; }
+        .field .label { font-weight: bold; padding-left: 10px; white-space: nowrap; z-index: 1; background: #fff; }
+        .field .value { flex-grow: 1; padding: 0 5px; position: relative; bottom: -2px; min-height: 1.2em; }
+        
+        .table-container { margin: 15px 0; }
+        table { width: 100%; border-collapse: collapse; text-align: center; }
+        th, td { border: 1px solid #000; padding: 8px 5px; font-weight: bold; }
+        th { background: #f0f0f0; }
+        
+        .signature-container { display: flex; justify-content: flex-end; margin-top: 10px; }
+        .signature-box { width: 50%; text-align: right; }
+        .signature-space { height: 120px; text-align: center; font-weight: bold; margin-top: 20px; }
+        
+        .footer-list { margin-top: 20px; padding: 0; list-style: none; }
+        .footer-list li { margin: 5px 0; display: flex; align-items: baseline; }
+        .footer-list li .label { font-weight: bold; padding-left: 5px; background: #fff; z-index: 1; }
+        .footer-list li .value { flex-grow: 1; min-height: 1.2em; }
+        
+        .notes { font-size: 10px; margin-top: 30px; line-height: 1.3; }
+        
+        .dotted-line { flex-grow: 1; height: 1em; }
+    </style>
+</head>
+<body>
+    <div class="page-border">
+        <div class="official-header">
+            <div>20 سبتمبر سنة 2017 م</div>
+            <div>الجريدة الرسمية للجمهورية الجزائرية / العدد 54</div>
+            <div>18</div>
+        </div>
+
+        <div class="header">
+            <div class="form-title">الملحق الأول</div>
+            <div class="country-title">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+        </div>
+
+        <div class="req-title">طلب رخصة اقتناء تجهيزات حساسة من السوق :</div>
+        <div class="req-subtitle">
+            <div>- الوطنية</div>
+            <div>- الخارجية (1)</div>
+        </div>
+
+        <div class="section">
+            <div style="font-weight: bold; margin-bottom: 10px;">الممضي أسفله،</div>
+            
+            <div class="field">
+                <span class="label">هوية الطالب ( 2 ) :</span> 
+                <span class="value">{{ client.display_name }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">المولود (ة) في :</span> 
+                <span class="value">{{ client.dob }} بـ {{ client.pob }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">الجنسية :</span> 
+                <span class="value">{{ client.nationality }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">العنوان ( 3 ) :</span> 
+                <span class="value">{{ client.address }}، {{ client.city }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">المهنة ( 4 ) :</span> 
+                <span class="value">{{ client.profession }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">نوع النشاطات ( 5 ) :</span> 
+                <span class="value">{{ client.activity_type }}</span>
+            </div>
+            
+            <div class="field">
+                <span class="label">مرجع الاعتماد ( 6 ) :</span> 
+                <span class="value">{{ client.accreditation_ref }}</span>
+            </div>
+        </div>
+
+        <div style="font-weight: bold; margin: 10px 0;">أطلب رخصة اقتناء، وتعيين حيازة التجهيزات الحساسة المبينة أدناه :</div>
+
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">تعيين التجهيزات</th>
+                        <th style="width: 35%;">طبيعة التجهيزات<br>(النوع والعلامة والنموذج)</th>
+                        <th style="width: 15%;">القسم</th>
+                        <th style="width: 15%;">القسم الفرعي</th>
+                        <th style="width: 15%;">الكمية</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for purchase in purchases %}
+                    <tr>
+                        <td>{{ purchase.equipment_designation }}</td>
+                        <td>{{ purchase.equipment_nature }} ({{ purchase.model_name }})</td>
+                        <td>{{ purchase.category }}</td>
+                        <td>{{ purchase.sub_category }}</td>
+                        <td>{{ purchase.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="signature-container">
+            <div class="signature-box">
+                حرر في <span style="min-width: 80px; display: inline-block; text-align: center;">{{ client.city }}</span> بـ <span style="min-width: 80px; display: inline-block; text-align: center;">{{ today_date }}</span>
+                <div class="signature-space">
+                    (إمضاء الطالب)
+                </div>
+            </div>
+        </div>
+
+        <ul class="footer-list">
+            <li>
+                <span class="label">- بلد منشأ التجهيزات :</span> 
+                <span class="value">{{ client.origin_country }}</span>
+            </li>
+            <li>
+                <span class="label">- بلد قدوم التجهيزات :</span> 
+                <span class="value">{{ client.import_country }}</span>
+            </li>
+            <li>
+                <span class="label">- كيفيات نقل التجهيزات :</span> 
+                <span class="value">{{ client.transport_method }}</span>
+            </li>
+            <li>
+                <span class="label">- مكان وأماكن تخزين واستعمال التجهيزات :</span> 
+                <span class="value">{{ client.display_storage }}</span>
+            </li>
+            <li>
+                <span class="label">- شروط حفظ التجهيزات في مأمن :</span> 
+                <span class="value">{{ client.security_conditions }}</span>
+            </li>
+        </ul>
+
+        <div class="notes">
+            1 - أشطب العبارة المستغنى عنها.<br>
+            2 - اذكر أسماء وألقاب أو الغرض الاجتماعي لطالب الرخصة.<br>
+            3 - حدد العنوان الشخصي أو عنوان المقر الاجتماعي لطالب الرخصة.<br>
+            4 - عندما يقدم الطلب من شخص طبيعي أو معنوي غير متعامل.<br>
+            5 و 6 - عندما يقدم الطلب من متعامل معتمد.
+        </div>
+    </div>
+</body>
+</html>
