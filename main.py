@@ -456,6 +456,79 @@ class AssignCameraDialog(MessageBox):
                 if cb and cb.isChecked(): ids.append(cb.property("sid"))
         return ids
 
+class ReturnCameraDialog(MessageBox):
+    def __init__(self, assigned_cameras, parent=None):
+        super().__init__(t('return_camera'), "", parent)
+        self.assigned_cameras = assigned_cameras
+        self.container = QWidget()
+        self.containerLayout = QVBoxLayout(self.container)
+        
+        self.lblTitle = SubtitleLabel("Select Cameras to Return", self.container)
+        self.containerLayout.addWidget(self.lblTitle)
+
+        self.serialTable = TableWidget(self.container)
+        self.serialTable.setColumnCount(3)
+        self.serialTable.setHorizontalHeaderLabels(["", t('serial_num'), t('int_model_name')])
+        self.serialTable.setColumnWidth(0, 50)
+        self.serialTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
+        self.serialTable.horizontalHeader().setSectionResizeMode(2, QHeaderView.ResizeMode.Stretch)
+        self.serialTable.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.serialTable.setMinimumHeight(300)
+        self.containerLayout.addWidget(self.serialTable)
+
+        ctrlLayout = QHBoxLayout()
+        self.btnAll = PushButton("Select All", self.container)
+        self.btnNone = PushButton("Clear All", self.container)
+        self.btnAll.clicked.connect(lambda: self.set_all_checked(True))
+        self.btnNone.clicked.connect(lambda: self.set_all_checked(False))
+        ctrlLayout.addWidget(self.btnAll)
+        ctrlLayout.addWidget(self.btnNone)
+        ctrlLayout.addStretch(1)
+        self.containerLayout.addLayout(ctrlLayout)
+
+        layout = getattr(self, 'viewLayout', getattr(self, 'vBoxLayout', None))
+        if layout: layout.insertWidget(min(layout.count(), 2), self.container)
+        
+        self.display_serials(self.assigned_cameras)
+        self.widget.setMinimumWidth(600)
+
+    def display_serials(self, serials):
+        self.serialTable.setRowCount(0)
+        for s in serials:
+            row = self.serialTable.rowCount()
+            self.serialTable.insertRow(row)
+            cb = CheckBox(self.serialTable)
+            # Find the serial_id. In get_client_purchases_for_pdf, we get serial_number but not serial_id directly in the dict?
+            # Wait, I need serial_id for the database operations. Let me check db_manager.py get_client_purchases_for_pdf
+            # It returns serial_number, but I might need the primary key.
+            cb.setProperty("sn", s["serial_number"])
+            cb.setFixedWidth(30)
+            hlayout = QHBoxLayout()
+            hlayout.addWidget(cb)
+            hlayout.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            hlayout.setContentsMargins(0, 0, 0, 0)
+            container = QWidget()
+            container.setLayout(hlayout)
+            self.serialTable.setCellWidget(row, 0, container)
+            self.serialTable.setItem(row, 1, QTableWidgetItem(s["serial_number"]))
+            self.serialTable.setItem(row, 2, QTableWidgetItem(s.get("model_name", "")))
+
+    def set_all_checked(self, checked):
+        for i in range(self.serialTable.rowCount()):
+            c = self.serialTable.cellWidget(i, 0)
+            if c:
+                cb = c.findChild(CheckBox)
+                if cb: cb.setChecked(checked)
+
+    def get_selected_serials(self):
+        serials = []
+        for i in range(self.serialTable.rowCount()):
+            c = self.serialTable.cellWidget(i, 0)
+            if c:
+                cb = c.findChild(CheckBox)
+                if cb and cb.isChecked(): serials.append(cb.property("sn"))
+        return serials
+
 class ClientInterface(QWidget):
     def __init__(self, db: DatabaseManager, parent=None):
         super().__init__(parent=parent)
@@ -619,21 +692,29 @@ class ClientInterface(QWidget):
         cid = self.get_selected_client_id()
         if not cid: return
         p = self.db.get_client_purchases_for_pdf(cid)["cameras"]
-        if not p: return
-        dlg = MessageBox(t('return_camera'), "", self.window())
-        cb = ComboBox(dlg); cb.addItems([i["serial_number"] for i in p])
-        lay = getattr(dlg, 'viewLayout', getattr(dlg, 'vBoxLayout', None))
-        if lay: lay.insertWidget(min(lay.count(), 2), cb)
-        if dlg.exec():
-            sn = cb.text()
+        if not p:
+            InfoBar.warning(t('warning'), "No cameras assigned to this client", parent=self, position=InfoBarPosition.TOP)
+            return
+            
+        d = ReturnCameraDialog(p, self.window())
+        if d.exec():
+            selected_serials = d.get_selected_serials()
+            if not selected_serials: return
+            
+            count = 0
             cur = self.db.conn.cursor()
-            cur.execute("SELECT id FROM serial_numbers WHERE serial_number=?", (sn,))
-            row = cur.fetchone()
-            if row:
-                sid = row[0]
-                cur.execute("DELETE FROM client_purchases WHERE client_id=? AND serial_id=?", (cid, sid))
-                cur.execute("UPDATE serial_numbers SET is_used=0 WHERE id=?", (sid,))
-                self.db.conn.commit()
+            for sn in selected_serials:
+                cur.execute("SELECT id FROM serial_numbers WHERE serial_number=?", (sn,))
+                row = cur.fetchone()
+                if row:
+                    sid = row[0]
+                    cur.execute("DELETE FROM client_purchases WHERE client_id=? AND serial_id=?", (cid, sid))
+                    cur.execute("UPDATE serial_numbers SET is_used=0 WHERE id=?", (sid,))
+                    count += 1
+            self.db.conn.commit()
+            if count:
+                InfoBar.success(t('success'), f"Returned {count} camera(s)!", parent=self, position=InfoBarPosition.TOP)
+                if hasattr(self.window(), 'inventoryInterface'): self.window().inventoryInterface.refresh_inventory_table()
 
     def generate_combined_pdf(self):
         cid = self.get_selected_client_id()
