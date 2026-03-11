@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+*$py.class
+dist/
+build/
+*.spec
+*.db
+*.log
+*.pdf
+# Temporary files from PDF generation
+annex*.html
+test*.html
+.vscode/
+.idea/
+venv/
+env/
