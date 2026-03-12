@@ -210,7 +210,9 @@ class DatabaseManager:
         cursor = self.conn.cursor()
         cursor.execute("SELECT * FROM clients WHERE id = ?;", (client_id,))
         row = cursor.fetchone()
-        return dict(row) if row else None
+        if row:
+            return dict(row)
+        return None
 
     def save_serial_batch(self, model_id: int, serials: list[str]) -> int:
         """Insert a batch of serial numbers for a given model."""
@@ -223,7 +225,7 @@ class DatabaseManager:
                     "VALUES (?, ?);",
                     (model_id, sn),
                 )
-                inserted += 1
+                inserted = inserted + 1
             except sqlite3.IntegrityError:
                 pass
         self.conn.commit()
@@ -299,6 +301,22 @@ class DatabaseManager:
             "client": client,
             "cameras": cameras
         }
+
+    def clear_database(self) -> bool:
+        """Truncate all tables (useful for maintenance). Returns True on success."""
+        cursor = self.conn.cursor()
+        try:
+            cursor.execute("DELETE FROM client_purchases;")
+            cursor.execute("DELETE FROM serial_numbers;")
+            cursor.execute("DELETE FROM clients;")
+            cursor.execute("DELETE FROM camera_models;")
+            self.conn.commit()
+            return True
+        except sqlite3.Error:
+            self.conn.rollback()
+            return False
+
+    # ------------------------------------------------------------------ #
 
     # ------------------------------------------------------------------ #
     #  Lifecycle

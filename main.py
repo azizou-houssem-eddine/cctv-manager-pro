@@ -294,7 +294,7 @@ class InventoryInterface(QWidget):
 
     def refresh_inventory_table(self):
         self.inventoryTable.setRowCount(0)
-        model_str = self.modelCombo.text()
+        model_str = self.modelCombo.currentText()
         if not model_str or "No models" in model_str:
             return
         
@@ -320,7 +320,7 @@ class InventoryInterface(QWidget):
     def handle_scan(self):
         text = self.scannerInput.text().strip()
         if not text: return
-        model_str = self.modelCombo.text()
+        model_str = self.modelCombo.currentText()
         if not model_str or "No models" in model_str:
             InfoBar.warning(t('warning'), t('select_model'), parent=self, position=InfoBarPosition.TOP)
             return
@@ -342,7 +342,7 @@ class InventoryInterface(QWidget):
 
     def save_scanned_batch(self):
         if not self.staged_serials: return
-        model_str = self.modelCombo.text()
+        model_str = self.modelCombo.currentText()
         try:
             model_id = int(model_str.split(" - ")[0])
             self.db.save_serial_batch(model_id, self.staged_serials)
@@ -407,7 +407,7 @@ class AssignCameraDialog(MessageBox):
         else: self.modelCombo.addItems([f"{m['id']} - {m['model_name']}" for m in models])
 
     def refresh_serials(self):
-        model_str = self.modelCombo.text()
+        model_str = self.modelCombo.currentText()
         self.all_serials = []
         if not model_str or "No" in model_str:
             self.display_serials([])
@@ -540,7 +540,9 @@ class ClientInterface(QWidget):
 
         self.formScroll = ScrollArea(self)
         self.formScroll.setWidgetResizable(True)
+        self.formScroll.setStyleSheet("background: transparent; border: none;")
         self.formScrollWidget = QWidget()
+        self.formScrollWidget.setStyleSheet("background: transparent;")
         self.formScroll.setWidget(self.formScrollWidget)
         self.formLayout = QVBoxLayout(self.formScrollWidget)
         self.formLayout.setContentsMargins(20, 20, 20, 20)
@@ -685,7 +687,8 @@ class ClientInterface(QWidget):
             if not ids: return
             count = 0
             for sid in ids:
-                if self.db.assign_camera_to_client(cid, sid): count += 1
+                if self.db.assign_camera_to_client(cid, sid): 
+                    count = count + 1
             if count: InfoBar.success(t('success'), t('assignment_success'), parent=self, position=InfoBarPosition.TOP)
 
     def open_return_dialog(self):
@@ -708,9 +711,8 @@ class ClientInterface(QWidget):
                 row = cur.fetchone()
                 if row:
                     sid = row[0]
-                    cur.execute("DELETE FROM client_purchases WHERE client_id=? AND serial_id=?", (cid, sid))
                     cur.execute("UPDATE serial_numbers SET is_used=0 WHERE id=?", (sid,))
-                    count += 1
+                    count = count + 1
             self.db.conn.commit()
             if count:
                 InfoBar.success(t('success'), f"Returned {count} camera(s)!", parent=self, position=InfoBarPosition.TOP)
@@ -720,11 +722,24 @@ class ClientInterface(QWidget):
         cid = self.get_selected_client_id()
         if not cid: return
         data = self.db.get_client_purchases_for_pdf(cid)
+        client_name = data["client"].get("full_name") or data["client"].get("company_name") or f"Client_{cid}"
+        
+        # Prepare folder structure
+        parent_folder = "1er dossier"
+        import re
+        sanitized_name = re.sub(r'[\\/*?:"<>|]', "_", client_name)
+        folder_path = os.path.join(parent_folder, sanitized_name)
+        
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
         try:
             gen = PDFGenerator()
-            gen.generate_annex1(data["client"], data["cameras"])
-            gen.generate_annex5(data["client"], data["cameras"])
-            InfoBar.success(t('success'), t('pdf_generated'), parent=self, position=InfoBarPosition.TOP)
+            p1 = os.path.join(folder_path, "annex1.pdf")
+            p5 = os.path.join(folder_path, "annex5.pdf")
+            gen.generate_annex1(data["client"], data["cameras"], output_name=p1)
+            gen.generate_annex5(data["client"], data["cameras"], output_name=p5)
+            InfoBar.success(t('success'), f"PDFs saved in: {folder_path}", parent=self, position=InfoBarPosition.TOP)
         except Exception as e:
             InfoBar.error(t('error'), str(e), parent=self, position=InfoBarPosition.TOP)
 

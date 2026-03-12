@@ -19,6 +19,7 @@ def build():
         "--add-data", add_data,
         "--name", "CCTV_Manager_Pro",
         "--clean",
+        "--exclude-module", "PyQt5",
         "main.py"
     ]
     

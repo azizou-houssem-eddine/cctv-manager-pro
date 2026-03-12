@@ -71,6 +71,11 @@ class PDFGenerator:
                 "file:///" + html_path.replace("\\", "/")
             ]
             subprocess.run(cmd, check=True)
+            if os.path.exists(html_path):
+                try:
+                    os.remove(html_path)
+                except:
+                    pass
             if os.path.exists(pdf_path):
                 os.startfile(pdf_path)
                 return pdf_path
