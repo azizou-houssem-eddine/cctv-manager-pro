@@ -1,16 +1,27 @@
 __pycache__/
 *.py[cod]
 *$py.class
-dist/
 build/
 *.spec
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
 *.log
 *.pdf
-# Temporary files from PDF generation
+!templates_pdf/*.pdf
+
+# Ephemeral and generated artifacts
+dossiers/
+review_previews/
+stress_previews/
+scratch/
+.agents/
 annex*.html
 test*.html
+
 .vscode/
 .idea/
 venv/
 env/
+

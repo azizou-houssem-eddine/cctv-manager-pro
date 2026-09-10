@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCTV Manager Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                </div>
+                <div class="brand-text">
+                    <h2>CCTV Manager</h2>
+                    <span class="badge-pro">PRO</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="dashboard">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="7" height="9"></rect>
+                        <rect x="14" y="3" width="7" height="5"></rect>
+                        <rect x="14" y="12" width="7" height="9"></rect>
+                        <rect x="3" y="16" width="7" height="5"></rect>
+                    </svg>
+                    <span data-i18n="nav_dashboard">Tableau de Bord</span>
+                </button>
+
+                <button class="nav-item" data-tab="inventory">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span data-i18n="nav_inventory">Inventaire</span>
+                </button>
+
+                <button class="nav-item" data-tab="clients">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                    <span data-i18n="nav_clients">Clients</span>
+                </button>
+
+                <button class="nav-item" data-tab="settings">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                    <span data-i18n="nav_settings">Paramètres</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="lang-switch">
+                    <button id="btnLangFr" class="lang-btn active" onclick="switchLanguage('fr')">FR</button>
+                    <button id="btnLangAr" class="lang-btn" onclick="switchLanguage('ar')">العربية</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <!-- Toast Notifications Area -->
+            <div id="toastContainer" class="toast-container"></div>
+
+            <!-- TAB 0: EXECUTIVE DASHBOARD (R1) -->
+            <section id="tab-dashboard" class="tab-pane active">
+                <header class="pane-header">
+                    <div class="flex-between">
+                        <div>
+                            <h1 data-i18n="dashboard_title">Tableau de Bord Exécutif</h1>
+                            <p class="subtitle" data-i18n="dashboard_sub">Vue synthétique du stock, des affectations et alertes réglementaires.</p>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="loadDashboard()">
+                            <span>🔄</span> <span data-i18n="refresh">Actualiser</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- KPI Cards Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label" data-i18n="kpi_in_stock">Caméras en Stock</span>
+                            <div class="stat-icon icon-stock">📦</div>
+                        </div>
+                        <div class="stat-value" id="kpiStockVal">0</div>
+                        <span class="stat-caption" data-i18n="kpi_available_for_install">Disponibles pour installation</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label" data-i18n="kpi_assigned">Équipements Déployés</span>
+                            <div class="stat-icon icon-assigned">📹</div>
+                        </div>
+                        <div class="stat-value" id="kpiAssignedVal">0</div>
+                        <span class="stat-caption" data-i18n="kpi_assigned_clients">Assignés aux clients</span>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-label" data-i18n="kpi_clients">Clients Enregistrés</span>
+                            <div class="stat-icon icon-clients">👥</div>
+                        </div>
+                        <div class="stat-value" id="kpiClientsVal">0</div>
+                        <span class="stat-caption" data-i18n="kpi_total_dossiers">Dossiers créés</span>
+                    </div>
+
+                    <div class="stat-card stat-alert" id="kpiAlertCard">
+                        <div class="stat-header">
+                            <span class="stat-label" data-i18n="kpi_low_stock">Alertes Stock Bas</span>
+                            <div class="stat-icon icon-alert">⚠️</div>
+                        </div>
+                        <div class="stat-value" id="kpiAlertVal">0</div>
+                        <span class="stat-caption" id="kpiAlertCaption" data-i18n="kpi_models_under_threshold">Modèles sous le seuil</span>
+                    </div>
+                </div>
+
+                <!-- Dashboard Split Grid -->
+                <div class="dashboard-split-grid">
+                    <!-- Low Stock Alerts Table -->
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3 data-i18n="low_stock_monitoring">Surveillance des Seuils de Stock</h3>
+                                <span id="lowStockBadge" class="badge badge-warning">0 alerte(s)</span>
+                            </div>
+                        </div>
+                        <div class="table-wrapper dashboard-table-wrapper">
+                            <table class="data-table" id="lowStockTable">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="model">Modèle</th>
+                                        <th data-i18n="stock">Stock Actuel</th>
+                                        <th data-i18n="threshold">Seuil Min.</th>
+                                        <th data-i18n="status">Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row"><td colspan="4" data-i18n="no_stock_alerts">Aucune alerte de stock bas</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions & Shortcuts -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="quick_actions">Actions Rapides & Raccourcis</h3>
+                        </div>
+                        <div class="quick-actions-grid">
+                            <button class="quick-action-btn" onclick="navigateToTab('inventory'); setTimeout(() => document.getElementById('scannerInput').focus(), 150);">
+                                <div class="qa-icon">⚡</div>
+                                <div class="qa-text">
+                                    <strong data-i18n="qa_quick_scan">Scanner Immédiat</strong>
+                                    <span data-i18n="qa_quick_scan_sub">Entrée rapide code-barres</span>
+                                </div>
+                            </button>
+                            <button class="quick-action-btn" onclick="navigateToTab('clients'); resetClientForm(); setTimeout(() => document.getElementById('cf_full_name').focus(), 150);">
+                                <div class="qa-icon">➕</div>
+                                <div class="qa-text">
+                                    <strong data-i18n="qa_new_client">Nouveau Client</strong>
+                                    <span data-i18n="qa_new_client_sub">Créer un dossier (1er Dossier)</span>
+                                </div>
+                            </button>
+                            <button class="quick-action-btn" onclick="openCsvImportModal()">
+                                <div class="qa-icon">📂</div>
+                                <div class="qa-text">
+                                    <strong data-i18n="qa_import_csv">Importer CSV</strong>
+                                    <span data-i18n="qa_import_csv_sub">Chargement par lot de sérials</span>
+                                </div>
+                            </button>
+                            <button class="quick-action-btn" onclick="exportFilteredSerials('excel')">
+                                <div class="qa-icon">📊</div>
+                                <div class="qa-text">
+                                    <strong data-i18n="qa_export_stock">Exporter l'Inventaire</strong>
+                                    <span data-i18n="qa_export_stock_sub">Fichier Excel (.xlsx) complet</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Keyboard Shortcuts Legend -->
+                        <div class="shortcuts-legend">
+                            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>F</kbd> <span data-i18n="sc_search">Recherche rapide</span></div>
+                            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>N</kbd> <span data-i18n="sc_new">Nouveau client</span></div>
+                            <div class="shortcut-item"><kbd>Ctrl</kbd> + <kbd>S</kbd> <span data-i18n="sc_save">Enregistrer</span></div>
+                            <div class="shortcut-item"><kbd>Esc</kbd> <span data-i18n="sc_esc">Fermer dialogue</span></div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 1: INVENTORY -->
+            <section id="tab-inventory" class="tab-pane">
+                <header class="pane-header">
+                    <h1 data-i18n="inventory_title">Gestion de l'Inventaire & Scannage</h1>
+                    <p class="subtitle" data-i18n="inventory_sub">Scannez des codes-barres ou sérials et suivez le stock en temps réel.</p>
+                </header>
+
+                <div class="card scan-card">
+                    <div class="card-header flex-between">
+                        <h3 data-i18n="scan_equipment">Scanner Équipement</h3>
+                        <button id="btnScannerSound" class="btn btn-secondary btn-sm" onclick="toggleScannerSound()" title="Son du scanner">
+                            <span id="soundIcon">🔊</span> <span data-i18n="sound_on">Bip Activé</span>
+                        </button>
+                    </div>
+                    <div class="scan-controls">
+                        <div class="form-group flex-1">
+                            <label data-i18n="select_model">Modèle de Caméra</label>
+                            <select id="scanModelSelect" class="form-control">
+                                <option value="" data-i18n="select_model_placeholder">-- Choisir un modèle --</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-2">
+                            <label data-i18n="serial_num">N° de Série (Entrée pour valider)</label>
+                            <div class="input-with-icon">
+                                <input type="text" id="scannerInput" class="form-control" placeholder="Scanner ici..." autocomplete="off">
+                                <span class="input-icon">⚡</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="inventory-split-grid">
+                    <!-- Staged Batch Card -->
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div>
+                                <h3 data-i18n="staged_batch">Lot en attente</h3>
+                                <span id="stagedCountBadge" class="badge">0 scanné(s)</span>
+                            </div>
+                            <div class="btn-group">
+                                <button id="btnSaveBatch" class="btn btn-primary" onclick="saveStagedBatch()">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                    <span data-i18n="save">Enregistrer</span>
+                                </button>
+                                <button id="btnClearBatch" class="btn btn-secondary" onclick="clearStagedBatch()" data-i18n="clear">Effacer</button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper staged-wrapper">
+                            <table class="data-table" id="stagedTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 60px;">#</th>
+                                        <th data-i18n="serial_num">N° de Série</th>
+                                        <th style="width: 80px;" data-i18n="actions">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="empty-row"><td colspan="3" data-i18n="no_scanned_yet">Aucun numéro scanné</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Live Inventory Card -->
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <div class="flex-align-center gap-10">
+                                <h3 data-i18n="existing_db">Stock en Base de Données</h3>
+                                <span id="totalStockBadge" class="badge">0 caméras</span>
+                            </div>
+                            <div class="filter-controls flex-align-center gap-8">
+                                <input type="text" id="inventorySearchInput" class="form-control form-control-sm" placeholder="Filtrer sérials..." oninput="debounceInventorySearch()" style="width: 150px;">
+                                <select id="filterModelSelect" class="form-control form-control-sm" onchange="loadInventoryTable()">
+                                    <option value="">Tous les modèles</option>
+                                </select>
+                                <button class="btn btn-secondary btn-sm" onclick="openCsvImportModal()" data-i18n="btn_import_csv">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                    <span data-i18n="import_csv">Importer CSV</span>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="exportFilteredSerials('csv')" title="Exporter CSV">
+                                    <span>📄 CSV</span>
+                                </button>
+                                <button class="btn btn-secondary btn-sm" onclick="exportFilteredSerials('excel')" title="Exporter Excel">
+                                    <span>📊 Excel</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="table-wrapper inventory-wrapper">
+                            <table class="data-table" id="inventoryTable">
+                                <thead>
+                                    <tr>
+                                        <th data-i18n="serial_num">N° Série</th>
+                                        <th data-i18n="model">Modèle</th>
+                                        <th data-i18n="status">État</th>
+                                        <th data-i18n="assigned_to">Assigné à</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 2: CLIENTS -->
+            <section id="tab-clients" class="tab-pane">
+                <header class="pane-header">
+                    <h1 data-i18n="nav_clients">Gestion des Clients & Dossiers</h1>
+                    <p class="subtitle" data-i18n="clients_sub">Enregistrez les dossiers réglementaires (Annexes 1 et 5) et affectez les équipements.</p>
+                </header>
+
+                <div class="clients-layout">
+                    <!-- Client Form (Scrollable) -->
+                    <div class="card client-form-card">
+                        <div class="card-header flex-between">
+                            <h3 id="clientFormTitle" data-i18n="register_client">Enregistrer Nouveau Client</h3>
+                            <button class="btn btn-secondary btn-sm" onclick="resetClientForm()" data-i18n="clear_form">Nouveau / Vider</button>
+                        </div>
+
+                        <form id="clientForm" class="client-scroll-form" onsubmit="handleClientSubmit(event)">
+                            <input type="hidden" id="clientIdInput" value="">
+
+                            <!-- Section 1: Identity -->
+                            <div class="form-section">
+                                <h4 class="section-title" data-i18n="identity">Identité</h4>
+                                <div class="form-grid">
+                                    <div class="form-group span-2">
+                                        <label data-i18n="full_name">Nom Complet: *</label>
+                                        <input type="text" id="cf_full_name" class="form-control" required placeholder="Nom et prénom">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="father_name">Nom du Père:</label>
+                                        <input type="text" id="cf_father_name" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="mother_name">Nom de la Mère:</label>
+                                        <input type="text" id="cf_mother_name" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="dob">Date de Naissance:</label>
+                                        <input type="text" id="cf_dob" class="form-control" placeholder="JJ/MM/AAAA">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="pob">Lieu de Naissance:</label>
+                                        <input type="text" id="cf_pob" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="nationality">Nationalité:</label>
+                                        <input type="text" id="cf_nationality" class="form-control" value="جزائرية">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 2: Documents -->
+                            <div class="form-section">
+                                <h4 class="section-title" data-i18n="documents">Documents d'Identité</h4>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label data-i18n="doc_num">N° Carte d'Identité: *</label>
+                                        <input type="text" id="cf_doc_number" class="form-control" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="doc_issuer">Délivré par:</label>
+                                        <input type="text" id="cf_doc_issuer" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="doc_date">Date de délivrance:</label>
+                                        <input type="text" id="cf_doc_issue_date" class="form-control" placeholder="JJ/MM/AAAA">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="passport_num">N° Passeport (optionnel):</label>
+                                        <input type="text" id="cf_passport_number" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="pass_issuer">Délivré par (Passeport):</label>
+                                        <input type="text" id="cf_passport_issuer" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="pass_date">Validité Passeport:</label>
+                                        <input type="text" id="cf_passport_expiry_date" class="form-control" placeholder="JJ/MM/AAAA">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 3: Corporate & Contact -->
+                            <div class="form-section">
+                                <h4 class="section-title" data-i18n="corporate">Entreprise & Contact</h4>
+                                <div class="form-grid">
+                                    <div class="form-group span-2">
+                                        <label data-i18n="company_name">Nom de l'Entreprise:</label>
+                                        <input type="text" id="cf_company_name" class="form-control">
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label data-i18n="company_hq">Siège Social:</label>
+                                        <input type="text" id="cf_company_hq" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="profession">Profession:</label>
+                                        <input type="text" id="cf_profession" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="activity_type">Type d'activité:</label>
+                                        <input type="text" id="cf_activity_type" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="phone">Téléphone:</label>
+                                        <input type="text" id="cf_phone" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="email">Email:</label>
+                                        <input type="email" id="cf_email" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="fax">Fax:</label>
+                                        <input type="text" id="cf_fax" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="city">Ville:</label>
+                                        <input type="text" id="cf_city" class="form-control">
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label data-i18n="address">Adresse complète:</label>
+                                        <input type="text" id="cf_address" class="form-control">
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label data-i18n="shareholders">Noms et Prénoms des Associés:</label>
+                                        <input type="text" id="cf_shareholders" class="form-control" placeholder="Séparés par une virgule">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Section 4: Logistics (Annex 1) -->
+                            <div class="form-section">
+                                <h4 class="section-title" data-i18n="logistics">Logistique (Annexe 1)</h4>
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label data-i18n="acc_ref">Réf. Accréditation:</label>
+                                        <input type="text" id="cf_accreditation_ref" class="form-control">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="origin_country">Pays d'origine:</label>
+                                        <input type="text" id="cf_origin_country" class="form-control" value="الصين">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="import_country">Pays d'importation:</label>
+                                        <input type="text" id="cf_import_country" class="form-control" value="الجزائر">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="trans_method">Méthode de transport:</label>
+                                        <input type="text" id="cf_transport_method" class="form-control" value="بحري / جوي">
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label data-i18n="storage_loc">Lieu de stockage:</label>
+                                        <input type="text" id="cf_storage_location" class="form-control">
+                                    </div>
+                                    <div class="form-group span-2">
+                                        <label data-i18n="security_cond">Conditions de sécurité:</label>
+                                        <input type="text" id="cf_security_conditions" class="form-control" value="حراسة ونظام إنذار ومراقبة 24/24">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="submit" id="btnSaveClient" class="btn btn-primary btn-block" data-i18n="save_client">Enregistrer le Client</button>
+                        </form>
+                    </div>
+
+                    <!-- Client Directory & Actions -->
+                    <div class="card client-directory-card">
+                        <!-- Modular Multi-Dossier Status Bar (R4) -->
+                        <div class="dossier-selector-bar">
+                            <div class="dossier-pill active" id="pillDossier1" onclick="selectDossierMode(1)">
+                                <span class="dossier-badge active-badge">1er Dossier</span>
+                                <strong data-i18n="dossier_1_title">Autorisation d'Acquisition</strong>
+                                <span class="dossier-sub" data-i18n="dossier_1_sub">Annexes 1 & 5 + PV de Pose</span>
+                            </div>
+                            <div class="dossier-pill" id="pillDossier2" onclick="selectDossierMode(2)">
+                                <span class="dossier-badge active-badge" id="badgeDossier2" data-i18n="dossier_2_badge_active">2ème Dossier</span>
+                                <strong data-i18n="dossier_2_title">2ème Dossier (Exploitation)</strong>
+                                <span class="dossier-sub" data-i18n="dossier_2_sub">Annexe 3 (Tableau Étendu) & Annexe 8</span>
+                            </div>
+                        </div>
+
+                        <div class="card-header flex-between">
+                            <div class="search-box">
+                                <input type="text" id="clientSearchInput" class="form-control" placeholder="Rechercher par nom, ID, ou téléphone..." oninput="loadClientsTable()">
+                            </div>
+                            <span id="clientsCountBadge" class="badge">0 clients</span>
+                        </div>
+
+                        <div class="table-wrapper directory-wrapper">
+                            <table class="data-table" id="clientsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ID</th>
+                                        <th data-i18n="full_name">Nom / Entreprise</th>
+                                        <th data-i18n="phone">Téléphone</th>
+                                        <th data-i18n="doc_num">N° Document</th>
+                                        <th data-i18n="cameras">Caméras</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="client-actions-bar">
+                            <button id="btnEditClient" class="btn btn-secondary" onclick="editSelectedClient()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                <span data-i18n="edit">Modifier</span>
+                            </button>
+
+                            <button id="btnAssignCam" class="btn btn-secondary" onclick="openAssignModal()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                <span data-i18n="assign_camera">Assigner Caméra</span>
+                            </button>
+
+                            <button id="btnReturnCam" class="btn btn-secondary" onclick="openReturnModal()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                <span data-i18n="return_camera">Retour Caméra</span>
+                            </button>
+
+                            <button id="btnOpenFolder" class="btn btn-secondary" onclick="openSelectedClientFolder()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                <span data-i18n="open_folder">Dossier Client</span>
+                            </button>
+
+                            <button id="btnOpenAllDossiers" class="btn btn-secondary" onclick="handleOpenDossiersDir()" title="Ouvrir le répertoire racine de tous les clients">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                <span data-i18n="all_dossiers">Tous les Dossiers</span>
+                            </button>
+
+                            <button id="btnPreviewDossier" class="btn btn-secondary" onclick="openSelectedClientPreview()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="3"></circle></svg>
+                                <span data-i18n="preview_docs">Aperçu</span>
+                            </button>
+
+                            <button id="btnGenerateDossier" class="btn btn-accent" onclick="generateDossierForSelectedClient()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <span data-i18n="first_dossier">1er Dossier (PDF)</span>
+                            </button>
+
+                            <button id="btnGenerateSecondDossier" class="btn btn-primary" onclick="generateSecondDossierForSelectedClient()" disabled>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                <span data-i18n="second_dossier">2ème Dossier (PDF)</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: SETTINGS & CATALOG -->
+            <section id="tab-settings" class="tab-pane">
+                <header class="pane-header">
+                    <h1 data-i18n="nav_settings">Paramètres & Catalogue</h1>
+                    <p class="subtitle" data-i18n="settings_sub">Configurez les modèles de caméras et gérez la base de données.</p>
+                </header>
+
+                <div class="settings-grid">
+                    <!-- Add Model Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="add_model">Ajouter un Modèle au Catalogue</h3>
+                        </div>
+                        <form id="addModelForm" onsubmit="handleAddModel(event)">
+                            <div class="form-grid">
+                                <div class="form-group span-2">
+                                    <label data-i18n="int_model_name">Marque & Modèle (interne)</label>
+                                    <input type="text" id="m_name" class="form-control" required placeholder="ex: Hikvision DS-2CD2143G2-I">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="equip_desig">Désignation (Annexe 1)</label>
+                                    <input type="text" id="m_desig" class="form-control" placeholder="ex: كاميرا مراقبة خارجية">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="equip_nature">Nature (Annexe 1)</label>
+                                    <input type="text" id="m_nature" class="form-control" placeholder="ex: IP Dome 4MP">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="category">Section (القسم)</label>
+                                    <input type="text" id="m_cat" class="form-control" placeholder="ex: القسم أ">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="sub_category">Sous-section (الفرع)</label>
+                                    <input type="text" id="m_subcat" class="form-control" placeholder="ex: الفرع 1">
+                                </div>
+                                <div class="form-group">
+                                    <label data-i18n="min_stock_threshold">Seuil Alerte Stock Bas</label>
+                                    <input type="number" id="m_threshold" class="form-control" min="0" max="999" value="5" placeholder="5">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="margin-top: 15px;" data-i18n="save_model">Enregistrer le Modèle</button>
+                        </form>
+                    </div>
+
+                    <!-- Dossier Storage Location Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="dossier_folder_title">📁 Emplacement des Dossiers Clients</h3>
+                        </div>
+                        <p class="text-muted" data-i18n="dossier_folder_desc">Choisissez le répertoire où seront créés automatiquement les dossiers des clients.</p>
+                        
+                        <div class="form-group" style="margin-top: 14px;">
+                            <label data-i18n="current_dossier_folder">Répertoire Racine Sélectionné</label>
+                            <div style="display: flex; gap: 8px; margin-top: 6px;">
+                                <input type="text" id="dossierRootInput" class="form-control" placeholder="Dossier racine..." readonly style="background: #f8fafc; font-family: var(--font-mono); font-size: 0.85rem; font-weight: 600; color: #0f172a;">
+                                <button type="button" class="btn btn-secondary" onclick="handleSelectDossierDir()" data-i18n="browse_btn">
+                                    📂 Parcourir
+                                </button>
+                                <button type="button" class="btn btn-secondary" onclick="handleOpenDossiersDir()" title="Ouvrir dans l'Explorateur Windows" data-i18n="open_folder_btn">
+                                    ↗️ Ouvrir
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="dossier-tree-preview" style="margin-top: 14px; background: #f8fafc; border: 1.5px dashed #cbd5e1; border-radius: 12px; padding: 14px; font-family: var(--font-mono); font-size: 0.82rem; color: #475569; line-height: 1.6;">
+                            <div style="color: #4f46e5; font-weight: 800;" data-i18n="tree_title">🗂️ Structure automatique des sous-dossiers :</div>
+                            <div style="margin-top: 6px; padding-left: 8px;">
+                                📁 &lt;Dossier Racine Sélectionné&gt;/<br>
+                                &nbsp;&nbsp;└── 📁 &lt;Nom Complet du Client&gt;/<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📁 <strong>1er dossier</strong>/ <span style="color: #059669; font-weight: 700;">(annex1.pdf, annex5.pdf, pv_reception.pdf)</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 📁 <strong>2eme dossier</strong>/ <span style="color: #d97706; font-weight: 700;">(Phase 2 - Exploitation)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Database Maintenance Card -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 data-i18n="maintenance">Maintenance du Système</h3>
+                        </div>
+                        <p class="text-muted" data-i18n="maint_desc">Gérez les données système, injectez des données de démonstration ou réinitialisez la base.</p>
+                        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" onclick="handleSeedDemoData()" data-i18n="seed_data_btn">🌱 Charger Données Démo</button>
+                            <button class="btn btn-danger" onclick="confirmClearDb()" data-i18n="clear_db">Vider la Base de Données</button>
+                        </div>
+                    </div>
+
+                    <!-- Catalog Table Card -->
+                    <div class="card span-2">
+                        <div class="card-header flex-between">
+                            <h3 data-i18n="registered_models">Modèles Enregistrés</h3>
+                            <span id="modelsCountBadge" class="badge">0 modèles</span>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table" id="modelsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ID</th>
+                                        <th data-i18n="int_model_name">Modèle</th>
+                                        <th data-i18n="equip_desig">Désignation</th>
+                                        <th data-i18n="equip_nature">Nature</th>
+                                        <th data-i18n="category">Section</th>
+                                        <th data-i18n="sub_category">Sous-section</th>
+                                        <th data-i18n="stock">En Stock</th>
+                                        <th data-i18n="threshold">Seuil</th>
+                                        <th style="width: 80px;" data-i18n="actions">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODAL 1: ASSIGN CAMERAS -->
+    <div id="assignModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 data-i18n="assign_camera">Assigner des Caméras au Client</h3>
+                <button class="btn-close" onclick="closeModal('assignModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="assignClientInfo" class="modal-subtitle">Client: </p>
+                <div class="form-group">
+                    <label data-i18n="select_model">Modèle de caméra</label>
+                    <select id="assignModelSelect" class="form-control" onchange="loadAvailableSerialsForAssign()">
+                        <!-- Models populated via JS -->
+                    </select>
+                </div>
+                <div class="flex-between" style="margin: 10px 0;">
+                    <span id="availableSerialsCount" class="badge">0 disponible(s)</span>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm" onclick="toggleAllAssignCheckboxes(true)" data-i18n="select_all">Tout Cocher</button>
+                        <button class="btn btn-secondary btn-sm" onclick="toggleAllAssignCheckboxes(false)" data-i18n="clear_all">Tout Décocher</button>
+                    </div>
+                </div>
+                <div class="table-wrapper" style="max-height: 260px;">
+                    <table class="data-table" id="assignSerialsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th data-i18n="serial_num">N° de Série</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('assignModal')" data-i18n="cancel">Annuler</button>
+                <button class="btn btn-primary" onclick="submitAssignCameras()" data-i18n="confirm_assign">Confirmer l'Assignation</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: RETURN CAMERAS -->
+    <div id="returnModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 data-i18n="return_camera">Retourner des Caméras en Stock</h3>
+                <button class="btn-close" onclick="closeModal('returnModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="returnClientInfo" class="modal-subtitle">Client: </p>
+                <div class="flex-between" style="margin: 10px 0;">
+                    <span id="assignedSerialsCount" class="badge">0 assignée(s)</span>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary btn-sm" onclick="toggleAllReturnCheckboxes(true)" data-i18n="select_all">Tout Cocher</button>
+                        <button class="btn btn-secondary btn-sm" onclick="toggleAllReturnCheckboxes(false)" data-i18n="clear_all">Tout Décocher</button>
+                    </div>
+                </div>
+                <div class="table-wrapper" style="max-height: 260px;">
+                    <table class="data-table" id="returnSerialsTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 40px;"></th>
+                                <th data-i18n="serial_num">N° de Série</th>
+                                <th data-i18n="model">Modèle</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('returnModal')" data-i18n="cancel">Annuler</button>
+                <button class="btn btn-primary" onclick="submitReturnCameras()" data-i18n="confirm_return">Confirmer le Retour</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: DOSSIER SUCCESS -->
+    <div id="dossierModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 id="dossierModalTitle" data-i18n="dossier_ready">Dossier Généré avec Succès !</h3>
+                <button class="btn-close" onclick="closeModal('dossierModal')">&times;</button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="success-icon">✓</div>
+                <p id="dossierClientName" style="font-weight: 600; font-size: 16px; margin: 10px 0;"></p>
+                <p class="text-muted" id="dossierModalSubtitle" data-i18n="dossier_saved_in">Les formulaires officiels ont été tamponnés avec succès.</p>
+                <div class="dossier-buttons" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button class="btn btn-accent" id="btnOpenDossierFolder" onclick="openGeneratedFolder()">
+                        📁 <span data-i18n="open_dossier_folder">Ouvrir le Dossier Client</span>
+                    </button>
+                    <div id="dossierFilesButtonContainer" style="display: flex; gap: 8px; flex-wrap: wrap;">
+                        <button class="btn btn-secondary flex-1" id="btnOpenAnnex1" onclick="openAnnex1Pdf()">
+                            📄 <span data-i18n="view_annex1">Annexe 1</span>
+                        </button>
+                        <button class="btn btn-secondary flex-1" id="btnOpenAnnex5" onclick="openAnnex5Pdf()">
+                            📄 <span data-i18n="view_annex5">Annexe 5</span>
+                        </button>
+                        <button class="btn btn-secondary flex-1" id="btnOpenPvPose" onclick="openPvPosePdf()">
+                            📋 <span data-i18n="view_pv_pose">PV de Pose</span>
+                        </button>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" onclick="openLastGeneratedPreview()">
+                        🔍 <span data-i18n="open_in_previewer">Ouvrir dans l'Aperçu Intégré</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary btn-block" onclick="closeModal('dossierModal')" data-i18n="close">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: IN-APP HIGH-RES PDF PREVIEWER (R3) -->
+    <div id="pdfPreviewModal" class="modal-backdrop">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-header flex-between">
+                <div class="flex-align-center gap-12">
+                    <h3 id="pdfPreviewTitle" data-i18n="doc_preview_title">Aperçu du Document Réglementaire</h3>
+                    <span id="pdfPreviewClientBadge" class="badge badge-info"></span>
+                </div>
+                <button class="btn-close" onclick="closeModal('pdfPreviewModal')">&times;</button>
+            </div>
+
+            <!-- PDF Viewer Toolbar -->
+            <div class="pdf-preview-toolbar">
+                <div class="pdf-doc-tabs">
+                    <button class="pdf-tab active" data-doctype="annex1" onclick="switchPreviewDocType('annex1')">Annexe 1</button>
+                    <button class="pdf-tab" data-doctype="annex5" onclick="switchPreviewDocType('annex5')">Annexe 5</button>
+                    <button class="pdf-tab" data-doctype="annex3" onclick="switchPreviewDocType('annex3')">Annexe 3</button>
+                    <button class="pdf-tab" data-doctype="annex8" onclick="switchPreviewDocType('annex8')">Annexe 8</button>
+                    <button class="pdf-tab" data-doctype="pv_pose" onclick="switchPreviewDocType('pv_pose')">PV de Pose</button>
+                </div>
+                <div class="pdf-pagination-controls">
+                    <button class="btn btn-secondary btn-sm" onclick="prevPreviewPage()" id="btnPrevPage">◀</button>
+                    <span id="pdfPageIndicator" class="badge">Page 1 / 1</span>
+                    <button class="btn btn-secondary btn-sm" onclick="nextPreviewPage()" id="btnNextPage">▶</button>
+                </div>
+                <div class="pdf-zoom-controls">
+                    <button class="btn btn-secondary btn-sm" onclick="adjustPreviewZoom(-0.15)">-</button>
+                    <span id="pdfZoomBadge" class="badge">100%</span>
+                    <button class="btn btn-secondary btn-sm" onclick="adjustPreviewZoom(0.15)">+</button>
+                    <button class="btn btn-secondary btn-sm" onclick="resetPreviewZoom()" data-i18n="fit">Ajuster</button>
+                </div>
+                <div class="pdf-external-action">
+                    <button class="btn btn-accent btn-sm" onclick="openCurrentPreviewExternally()" id="btnOpenExternalPdf" data-i18n="open_pdf">
+                        Ouvrir PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- PDF Page View Area -->
+            <div class="modal-body pdf-preview-body" id="pdfPreviewBody">
+                <div id="pdfLoadingSpinner" class="pdf-loading-spinner" style="display: none;">
+                    <div class="spinner"></div>
+                    <p data-i18n="rendering_preview">Génération du rendu officiel 150 DPI...</p>
+                </div>
+                <div id="pdfViewerCanvas" class="pdf-viewer-canvas">
+                    <img id="pdfPageImg" class="pdf-page-img" alt="Document Preview">
+                </div>
+            </div>
+
+            <div class="modal-footer flex-between">
+                <span class="text-muted" data-i18n="preview_tampon_note">Rendu officiel haute fidélité conforme aux modèles du Journal Officiel N°54.</span>
+                <button class="btn btn-secondary" onclick="closeModal('pdfPreviewModal')" data-i18n="close">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: BULK CSV / TXT IMPORT (R2) -->
+    <div id="csvImportModal" class="modal-backdrop">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header flex-between">
+                <h3 data-i18n="csv_import_title">Importation Massive de Numéros de Série (CSV / TXT)</h3>
+                <button class="btn-close" onclick="closeModal('csvImportModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" style="margin-bottom: 14px;">
+                    <label data-i18n="select_model">Modèle de Caméra de Destination *</label>
+                    <select id="csvImportModelSelect" class="form-control">
+                        <!-- Populated via JS -->
+                    </select>
+                </div>
+
+                <!-- Interactive Dropzone -->
+                <div id="csvDropzone" class="csv-dropzone" onclick="document.getElementById('csvFileInput').click()">
+                    <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleCsvFileSelected(event)">
+                    <div class="dropzone-content">
+                        <div class="dropzone-icon">📁</div>
+                        <h4 data-i18n="dropzone_prompt">Glissez-déposez votre fichier CSV ici ou cliquez pour parcourir</h4>
+                        <p class="text-muted" data-i18n="dropzone_sub">Détection automatique du séparateur (virgule, point-virgule, tabulation) et des en-têtes.</p>
+                    </div>
+                </div>
+
+                <!-- Analysis Summary Stats -->
+                <div id="csvAnalysisSummary" class="csv-analysis-summary" style="display: none; margin-top: 15px;">
+                    <div class="analysis-stat"><span class="label" data-i18n="total_detected">Total détecté:</span> <strong id="csvStatTotal">0</strong></div>
+                    <div class="analysis-stat text-success"><span class="label" data-i18n="valid_new">Valides & Nouveaux:</span> <strong id="csvStatValid">0</strong></div>
+                    <div class="analysis-stat text-warning"><span class="label" data-i18n="dup_in_file">Doublons dans fichier:</span> <strong id="csvStatDupFile">0</strong></div>
+                    <div class="analysis-stat text-danger"><span class="label" data-i18n="already_in_db">Déjà en base:</span> <strong id="csvStatInDb">0</strong></div>
+                </div>
+
+                <!-- Preview Table -->
+                <div id="csvPreviewTableWrapper" class="table-wrapper" style="display: none; max-height: 200px; margin-top: 15px;">
+                    <table class="data-table" id="csvPreviewTable">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th data-i18n="serial_num">N° de Série</th>
+                                <th data-i18n="status">État</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('csvImportModal')" data-i18n="cancel">Annuler</button>
+                <button class="btn btn-primary" id="btnConfirmCsvImport" onclick="submitCsvImport()" disabled data-i18n="confirm_import">
+                    Confirmer l'Importation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
