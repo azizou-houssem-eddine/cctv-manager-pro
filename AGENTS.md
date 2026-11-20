@@ -16,6 +16,7 @@ Comprehensive developer and agent reference for the **CCTV Manager Pro** reposit
   - **1er Dossier (Acquisition Phase):**
     - **Annex 1 (Official Gazette #54, 2017 Page 18):** Equipment declaration form stamped with client identity, logistics, and aggregated camera models.
     - **Annex 5 (Official Gazette #54, 2017 Page 21):** Security clearance questionnaire stamped with 29 civil, corporate, and document fields.
+    - **Agrément de l'Installateur (اعتماد القائم بالتركيب):** Authentic installer license stamped on each page with regulatory endorsement (`تسلم نسخة واحدة الى السيد... من اجل رخصة اقتناء`) and seal/signature.
     - **PV de Réception / Bordereau de Pose:** Vector installation receipt detailing all exact serial numbers.
   - **2ème Dossier (Exploitation Phase):**
     - **Annex 3 Extended (Official Gazette #63, 2011):** Sensitive equipment exploitation license request with an extended 15-row regulatory table.
@@ -65,7 +66,7 @@ d:\programation\cctv\
 │   └── app.js                 # State, barcode listener, API bridge calls, translations
 ├── dossiers/                  # Root directory for generated client dossiers
 │   └── <Client_Name>/
-│       ├── 1er_dossier/       # annex1.pdf, annex5.pdf, pv_reception.pdf
+│       ├── 1er_dossier/       # annex1.pdf, annex5.pdf, agreement.pdf, pv_reception.pdf
 │       └── 2eme_dossier/      # annex3.pdf, annex8.pdf, pv_reception.pdf
 └── dist/                      # PyInstaller output directory (contains CCTV_Manager_Pro.exe)
 ```

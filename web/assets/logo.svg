@@ -1,0 +1,145 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <!-- Background Shield Gradient -->
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e1b4b" />
+      <stop offset="50%" stop-color="#312e81" />
+      <stop offset="100%" stop-color="#4338ca" />
+    </linearGradient>
+
+    <!-- Outer Glow / Stroke Gradient -->
+    <linearGradient id="borderGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#818cf8" />
+      <stop offset="100%" stop-color="#c084fc" />
+    </linearGradient>
+
+    <!-- Aperture Ring Gradient -->
+    <linearGradient id="apertureGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+
+    <!-- Lens Core Radial Gradient -->
+    <radialGradient id="lensCore" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9" />
+      <stop offset="45%" stop-color="#0369a1" stop-opacity="0.7" />
+      <stop offset="85%" stop-color="#0c4a6e" stop-opacity="0.95" />
+      <stop offset="100%" stop-color="#082f49" />
+    </radialGradient>
+
+    <!-- Emerald Badge Gradient -->
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399" />
+      <stop offset="100%" stop-color="#059669" />
+    </linearGradient>
+
+    <!-- Drop Shadows -->
+    <filter id="dropShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.5" />
+    </filter>
+
+    <filter id="glowFilter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Main Security Shield Body -->
+  <path d="M256 36 
+           C340 76 416 88 440 92 
+           C446 160 452 296 394 388 
+           C346 464 278 496 256 504 
+           C234 496 166 464 118 388 
+           C60 296 66 160 72 92 
+           C96 88 172 76 256 36 Z" 
+        fill="url(#shieldGrad)" 
+        stroke="url(#borderGrad)" 
+        stroke-width="12" 
+        stroke-linejoin="round"
+        filter="url(#dropShadow)" />
+
+  <!-- Inner Subtle Shield Inset -->
+  <path d="M256 58 
+           C332 94 400 105 422 108 
+           C427 168 432 284 380 366 
+           C338 434 276 464 256 472 
+           C236 464 174 434 132 366 
+           C80 284 85 168 90 108 
+           C112 105 180 94 256 58 Z" 
+        fill="none" 
+        stroke="#ffffff" 
+        stroke-opacity="0.12" 
+        stroke-width="3" />
+
+  <!-- CCTV Camera Housing Outer Ring -->
+  <circle cx="256" cy="245" r="130" 
+          fill="#0f172a" 
+          stroke="url(#borderGrad)" 
+          stroke-width="7" 
+          filter="url(#dropShadow)" />
+
+  <!-- Aperture Outer Guide Ring -->
+  <circle cx="256" cy="245" r="110" 
+          fill="none" 
+          stroke="url(#apertureGrad)" 
+          stroke-width="4" 
+          stroke-dasharray="14 8" 
+          opacity="0.75" />
+
+  <!-- Camera Lens Core -->
+  <circle cx="256" cy="245" r="92" 
+          fill="url(#lensCore)" 
+          stroke="#38bdf8" 
+          stroke-width="5" />
+
+  <!-- High-Tech Camera Aperture Blades -->
+  <g stroke="#0369a1" stroke-width="3" opacity="0.65">
+    <path d="M256 165 L295 220" />
+    <path d="M325 205 L315 275" />
+    <path d="M330 270 L275 315" />
+    <path d="M270 325 L215 295" />
+    <path d="M190 280 L200 215" />
+    <path d="M185 215 L240 175" />
+  </g>
+
+  <!-- Central Camera Sensor Eye -->
+  <circle cx="256" cy="245" r="48" 
+          fill="#0284c7" 
+          stroke="#7dd3fc" 
+          stroke-width="4" />
+
+  <circle cx="256" cy="245" r="26" 
+          fill="#38bdf8" 
+          filter="url(#glowFilter)" />
+
+  <circle cx="256" cy="245" r="12" 
+          fill="#ffffff" />
+
+  <!-- Lens Glare Highlight -->
+  <path d="M225 185 A 70 70 0 0 1 295 185" 
+        stroke="#ffffff" 
+        stroke-width="6" 
+        stroke-linecap="round" 
+        fill="none" 
+        opacity="0.5" />
+
+  <circle cx="236" cy="205" r="7" fill="#ffffff" opacity="0.6" />
+
+  <!-- Top Surveillance Sensor LED -->
+  <circle cx="256" cy="140" r="6" fill="#ef4444" filter="url(#glowFilter)" />
+  <circle cx="256" cy="140" r="2.5" fill="#fecaca" />
+
+  <!-- Regulatory Compliance Emerald Badge (Bottom Right Over Shield) -->
+  <g transform="translate(325, 345)" filter="url(#dropShadow)">
+    <circle cx="48" cy="48" r="46" fill="#0f172a" stroke="#ffffff" stroke-width="3" />
+    <circle cx="48" cy="48" r="40" fill="url(#emeraldGrad)" />
+    <!-- Checkmark -->
+    <path d="M32 48 L44 60 L66 36" 
+          fill="none" 
+          stroke="#ffffff" 
+          stroke-width="7" 
+          stroke-linecap="round" 
+          stroke-linejoin="round" />
+  </g>
+</svg>

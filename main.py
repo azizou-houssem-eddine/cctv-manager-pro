@@ -21,7 +21,11 @@ def main():
     if not os.path.exists(html_path):
         html_path = os.path.abspath(os.path.join("web", "index.html"))
 
-    # 5. Create Native Windows 11 WebView2 Window
+    icon_path = resource_path("app_icon.ico")
+    if not os.path.exists(icon_path):
+        icon_path = os.path.abspath("app_icon.ico")
+
+    # 5. Create Native Windows 11 WebView2 Window (Maximized by default)
     window = webview.create_window(
         title="CCTV Manager Pro",
         url=html_path,
@@ -29,13 +33,14 @@ def main():
         width=1320,
         height=860,
         min_size=(1050, 720),
+        maximized=True,
         background_color="#f8fafc"
     )
 
     # Bind active window instance to bridge for native Windows file/folder dialogs
     api.set_window(window)
 
-    webview.start(debug=False)
+    webview.start(debug=False, icon=icon_path if os.path.exists(icon_path) else None)
 
 if __name__ == "__main__":
     main()

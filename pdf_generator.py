@@ -105,16 +105,88 @@ def calculate_pv_page_splits(n_cams: int) -> list[int]:
             rem -= chunk
     return pages
 
+ALGERIAN_WILAYAS_LATIN_TO_AR = {
+    "adrar": "أدرار", "chlef": "الشلف", "laghouat": "الأغواط", "oum el bouaghi": "أم البواقي",
+    "batna": "باتنة", "bejaia": "بجاية", "béjaïa": "بجاية", "biskra": "بسكرة", "bechar": "بشار",
+    "béchar": "بشار", "blida": "البليدة", "bouira": "البويرة", "tamanrasset": "تمنراست",
+    "tamanghasset": "تمنراست", "tebessa": "تبسة", "tébessa": "تبسة", "tlemcen": "تلمسان",
+    "tiaret": "تيارت", "tizi ouzou": "تيزي وزو", "alger": "الجزائر", "algiers": "الجزائر",
+    "djelfa": "الجلفة", "jijel": "جيجل", "setif": "سطيف", "sétif": "سطيف", "saida": "سعيدة",
+    "saïda": "سعيدة", "skikda": "سكيكدة", "sidi bel abbes": "سيدي بلعباس",
+    "sidi bel abbès": "سيدي بلعباس", "annaba": "عنابة", "guelma": "قالمة",
+    "constantine": "قسنطينة", "medea": "المدية", "médéa": "المدية", "mostaganem": "مستغانم",
+    "msila": "المسيلة", "m'sila": "المسيلة", "mascara": "معسكر", "ouargla": "ورقلة",
+    "oran": "وهران", "el bayadh": "البيض", "bayadh": "البيض", "illizi": "إليزي",
+    "bordj bou arreridj": "برج بوعريريج", "bba": "برج بوعريريج", "boumerdes": "بومرداس",
+    "boumerdès": "بومرداس", "el tarf": "الطارف", "tarf": "الطارف", "tindouf": "تندوف",
+    "tissemsilt": "تيسمسيلت", "el oued": "الوادي", "oued": "الوادي", "khenchela": "خنشلة",
+    "souk ahras": "سوق أهراس", "tipaza": "تيبازة", "tipasa": "تيبازة", "mila": "ميلة",
+    "ain defla": "عين الدفلى", "aïn defla": "عين الدفلى", "naama": "النعامة",
+    "naâma": "النعامة", "ain temouchent": "عين تموشنت", "aïn témouchent": "عين تموشنت",
+    "ghardaia": "غرداية", "ghardaïa": "غرداية", "relizane": "غليزان", "timimoun": "تيميمون",
+    "bordj badji mokhtar": "برج باجي مختار", "ouled djellal": "أولاد جلال",
+    "beni abbes": "بني عباس", "béni abbès": "بني عباس", "in salah": "عين صالح",
+    "in guezzam": "عين قزام", "touggourt": "تقرت", "djanet": "جانت",
+    "el m'ghair": "المغير", "el meghaier": "المغير", "el meniaa": "المنيعة", "meniaa": "المنيعة"
+}
+
+ARABIC_TO_FRENCH_WILAYAS = {
+    "أدرار": "Adrar", "الشلف": "Chlef", "الأغواط": "Laghouat", "أم البواقي": "Oum El Bouaghi",
+    "باتنة": "Batna", "بجاية": "Béjaïa", "بسكرة": "Biskra", "بشار": "Béchar",
+    "البليدة": "Blida", "البويرة": "Bouira", "تمنراست": "Tamanrasset", "تبسة": "Tébessa",
+    "تلمسان": "Tlemcen", "تيارت": "Tiaret", "تيزي وزو": "Tizi Ouzou", "الجزائر": "Alger",
+    "الجلفة": "Djelfa", "جيجل": "Jijel", "سطيف": "Sétif", "سعيدة": "Saïda",
+    "سكيكدة": "Skikda", "سيدي بلعباس": "Sidi Bel Abbès", "عنابة": "Annaba", "قالمة": "Guelma",
+    "قسنطينة": "Constantine", "المدية": "Médéa", "مستغانم": "Mostaganem", "المسيلة": "M'Sila",
+    "معسكر": "Mascara", "ورقلة": "Ouargla", "وهران": "Oran", "البيض": "El Bayadh",
+    "إليزي": "Illizi", "برج بوعريريج": "Bordj Bou Arreridj", "بومرداس": "Boumerdès",
+    "الطارف": "El Tarf", "تندوف": "Tindouf", "تيسمسيلت": "Tissemsilt", "الوادي": "El Oued",
+    "خنشلة": "Khenchela", "سوق أهراس": "Souk Ahras", "تيبازة": "Tipaza", "ميلة": "Mila",
+    "عين الدفلى": "Aïn Defla", "النعامة": "Naâma", "عين تموشنت": "Aïn Témouchent",
+    "غرداية": "Ghardaïa", "غليزان": "Relizane", "تيميمون": "Timimoun",
+    "برج باجي مختار": "Bordj Badji Mokhtar", "أولاد جلال": "Ouled Djellal",
+    "بني عباس": "Béni Abbès", "عين صالح": "In Salah", "عين قزام": "In Guezzam",
+    "تقرت": "Touggourt", "جانت": "Djanet", "المغير": "El M'Ghair", "المنيعة": "El Meniaa"
+}
+
+def normalize_city(raw_city: str, lang: str = "ar") -> str:
+    """Normalize Algerian city/wilaya name to target language ('ar' or 'fr')."""
+    if not raw_city or not str(raw_city).strip():
+        return "الجزائر" if lang == "ar" else "Alger"
+    clean = str(raw_city).strip()
+    clean_lower = clean.lower()
+
+    if lang == "ar":
+        if any('\u0600' <= ch <= '\u06FF' for ch in clean):
+            return clean
+        if clean_lower in ALGERIAN_WILAYAS_LATIN_TO_AR:
+            return ALGERIAN_WILAYAS_LATIN_TO_AR[clean_lower]
+        for lat, ar_w in ALGERIAN_WILAYAS_LATIN_TO_AR.items():
+            if lat in clean_lower:
+                return ar_w
+        return clean
+    else:
+        if clean in ARABIC_TO_FRENCH_WILAYAS:
+            return ARABIC_TO_FRENCH_WILAYAS[clean]
+        for ar_w, fr_w in ARABIC_TO_FRENCH_WILAYAS.items():
+            if ar_w in clean:
+                return fr_w
+        if clean_lower in ALGERIAN_WILAYAS_LATIN_TO_AR:
+            ar_w = ALGERIAN_WILAYAS_LATIN_TO_AR[clean_lower]
+            return ARABIC_TO_FRENCH_WILAYAS.get(ar_w, clean.title())
+        return clean.title()
+
 class DossierResult(tuple):
     """
     Hybrid return container for generate_client_dossier:
     Acts as a 3-element tuple (folder, annex1, annex5) for legacy callers,
     while offering complete dictionary / mapping access for modern multi-dossier consumers.
     """
-    def __new__(cls, folder, annex1, annex5, pv_reception=None, files=None):
+    def __new__(cls, folder, annex1, annex5, pv_reception=None, agreement=None, files=None):
         return super().__new__(cls, (folder, annex1, annex5))
 
-    def __init__(self, folder, annex1, annex5, pv_reception=None, files=None):
+    def __init__(self, folder, annex1, annex5, pv_reception=None, agreement=None, files=None):
+        file_list = files or ["annex1.pdf", "annex5.pdf", "agreement.pdf", "pv_reception.pdf"]
         self._dict = {
             "success": True,
             "folder": folder,
@@ -122,7 +194,8 @@ class DossierResult(tuple):
             "annex1": annex1,
             "annex5": annex5,
             "pv_reception": pv_reception or os.path.join(folder, "pv_reception.pdf"),
-            "files": files or ["annex1.pdf", "annex5.pdf", "pv_reception.pdf"]
+            "agreement": agreement or os.path.join(folder, "agreement.pdf"),
+            "files": file_list
         }
 
     def get(self, key, default=None):
@@ -182,6 +255,76 @@ class PDFGenerator:
             self.font = fitz.Font(fontfile=self.font_path) if os.path.exists(self.font_path) else None
         except Exception:
             self.font = None
+
+        self.installer_profile = {}
+
+    def set_installer_profile(self, profile: dict):
+        """Set installer branding profile and seal/signature images."""
+        self.installer_profile = profile or {}
+
+    def _get_signature_city(self, client: dict = None, lang: str = "ar") -> str:
+        """
+        Return location for signature and stamping based on user/installer configuration or client info.
+        Priority:
+        1. Configured installer city from Settings (installer_city)
+        2. Client city (client.city)
+        3. Client address / storage location if containing known wilaya/city
+        4. Default to الجزائر (Alger).
+        Automatically normalizes to Arabic (e.g., 'البليدة') or French (e.g., 'Blida') according to document language.
+        """
+        profile = getattr(self, "installer_profile", {}) or {}
+        raw_city = (profile.get("city") or "").strip()
+        if not raw_city and client:
+            raw_city = (client.get("city") or "").strip()
+        if not raw_city and client:
+            addr = (client.get("address") or client.get("company_hq") or "").strip()
+            if addr:
+                for k in ALGERIAN_WILAYAS_LATIN_TO_AR:
+                    if k in addr.lower():
+                        raw_city = k
+                        break
+                if not raw_city:
+                    for ar_w in ARABIC_TO_FRENCH_WILAYAS:
+                        if ar_w in addr:
+                            raw_city = ar_w
+                            break
+
+        if not raw_city:
+            raw_city = "الجزائر" if lang == "ar" else "Alger"
+
+        return normalize_city(raw_city, lang=lang)
+
+    def _stamp_installer_seal_and_signature(self, page, seal_rect: fitz.Rect, sig_rect: fitz.Rect = None):
+        """Stamp installer company seal and signature onto page if configured and enabled."""
+        profile = getattr(self, "installer_profile", {})
+        if not profile or not profile.get("enabled"):
+            return
+
+        import base64
+        seal_b64 = profile.get("seal_image_b64")
+        if seal_b64 and seal_rect:
+            try:
+                s_str = str(seal_b64).strip()
+                if ";base64," in s_str:
+                    s_str = s_str.split(";base64,", 1)[1]
+                seal_bytes = base64.b64decode(s_str)
+                if seal_bytes:
+                    page.insert_image(seal_rect, stream=seal_bytes, keep_proportion=True)
+            except Exception:
+                pass
+
+        sig_b64 = profile.get("signature_image_b64")
+        target_sig_rect = sig_rect if sig_rect else seal_rect
+        if sig_b64 and target_sig_rect:
+            try:
+                s_str = str(sig_b64).strip()
+                if ";base64," in s_str:
+                    s_str = s_str.split(";base64,", 1)[1]
+                sig_bytes = base64.b64decode(s_str)
+                if sig_bytes:
+                    page.insert_image(target_sig_rect, stream=sig_bytes, keep_proportion=True)
+            except Exception:
+                pass
 
     def shape_arabic(self, text: str, base_dir: str = None) -> str:
         """Instance method shortcut for shape_arabic."""
@@ -310,9 +453,9 @@ class PDFGenerator:
             self._stamp_field(page, fitz.Rect(35, y, 117, y + row_height - 2), str(qty), fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=8.0)
 
         # 3. Date & City (City after حرر بـ, Date after في)
-        sig_city = client.get("city") or "الجزائر"
-        self._stamp_field(page, fitz.Rect(130, 506, 158, 522), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER)
-        self._stamp_field(page, fitz.Rect(57, 506, 112, 522), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER)
+        sig_city = self._get_signature_city(client, lang="ar")
+        self._stamp_field(page, fitz.Rect(125, 506, 162, 522), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0, whiteout=True)
+        self._stamp_field(page, fitz.Rect(57, 506, 115, 522), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0, whiteout=True)
 
         # 4. Logistics Lines (floating on top of points)
         self._stamp_field(page, fitz.Rect(38, 557, 430, 573), client.get("origin_country", "الصين"), fontname=fontname)
@@ -322,6 +465,9 @@ class PDFGenerator:
         storage = client.get("storage_location") or client.get("company_hq") or full_addr
         self._stamp_field(page, fitz.Rect(38, 614, 333, 630), storage, fontname=fontname)
         self._stamp_field(page, fitz.Rect(38, 633, 375, 649), client.get("security_conditions", "حراسة ونظام إنذار ومراقبة 24/24"), fontname=fontname)
+
+        # 5. Installer Stamp & Signature
+        self._stamp_installer_seal_and_signature(page, seal_rect=fitz.Rect(110, 520, 195, 600), sig_rect=fitz.Rect(45, 535, 125, 595))
 
         if output_name is None:
             pdf_bytes = doc.tobytes(deflate=True, garbage=4)
@@ -394,9 +540,12 @@ class PDFGenerator:
         self._stamp_field(page, fitz.Rect(38, 472, 412, 488), client.get("shareholders", ""), fontname=fontname, max_size=10.0, min_size=6.0)
 
         # Signature city & date (Date after حرر في, City after بـ)
-        sig_city = client.get("city") or "الجزائر"
-        self._stamp_field(page, fitz.Rect(135, 599, 185, 615), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0)
-        self._stamp_field(page, fitz.Rect(58, 599, 133, 615), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0)
+        sig_city = self._get_signature_city(client, lang="ar")
+        self._stamp_field(page, fitz.Rect(135, 599, 185, 615), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0, whiteout=True)
+        self._stamp_field(page, fitz.Rect(55, 599, 133, 615), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=10.0, min_size=7.0, whiteout=True)
+
+        # 5. Installer Stamp & Signature
+        self._stamp_installer_seal_and_signature(page, seal_rect=fitz.Rect(110, 620, 195, 700), sig_rect=fitz.Rect(45, 635, 125, 695))
 
         if output_name is None:
             pdf_bytes = doc.tobytes(deflate=True, garbage=4)
@@ -484,9 +633,12 @@ class PDFGenerator:
             self._stamp_field(page, fitz.Rect(30, y + 1, 93, y + 19), site_addr, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=8.0, min_size=5.5, whiteout=False)
 
         # 3. Date & City (City after حرر بـ, Date after في)
-        sig_city = client.get("city") or "الجزائر"
-        self._stamp_field(page, fitz.Rect(160, 640, 188, 654), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=False)
-        self._stamp_field(page, fitz.Rect(98, 640, 148, 654), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=False)
+        sig_city = self._get_signature_city(client, lang="ar")
+        self._stamp_field(page, fitz.Rect(155, 638, 192, 654), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=True)
+        self._stamp_field(page, fitz.Rect(95, 638, 150, 654), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=True)
+
+        # 4. Installer Stamp & Signature
+        self._stamp_installer_seal_and_signature(page, seal_rect=fitz.Rect(110, 660, 195, 740), sig_rect=fitz.Rect(45, 675, 125, 735))
 
         if output_name is None:
             pdf_bytes = doc.tobytes(deflate=True, garbage=4)
@@ -532,9 +684,12 @@ class PDFGenerator:
         self._stamp_field(page, fitz.Rect(35, 328, 310, 344), site_loc, fontname=fontname, align=fitz.TEXT_ALIGN_RIGHT)
 
         # 3. Date & City (City after حرر بـ, Date after في)
-        sig_city = client.get("city") or "الجزائر"
-        self._stamp_field(page, fitz.Rect(116, 461, 153, 477), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER)
-        self._stamp_field(page, fitz.Rect(31, 461, 95, 477), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER)
+        sig_city = self._get_signature_city(client, lang="ar")
+        self._stamp_field(page, fitz.Rect(110, 461, 158, 477), sig_city, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=True)
+        self._stamp_field(page, fitz.Rect(31, 461, 100, 477), today, fontname=fontname, align=fitz.TEXT_ALIGN_CENTER, max_size=9.5, min_size=6.0, whiteout=True)
+
+        # 4. Installer Stamp & Signature
+        self._stamp_installer_seal_and_signature(page, seal_rect=fitz.Rect(100, 480, 180, 560), sig_rect=fitz.Rect(35, 495, 110, 555))
 
         if output_name is None:
             pdf_bytes = doc.tobytes(deflate=True, garbage=4)
@@ -580,6 +735,7 @@ class PDFGenerator:
             cid_int = 1
         today_str = date.today().strftime("%d/%m/%Y")
         pv_ref = f"PV-{cid_int:04d}-{date.today().strftime('%Y%m%d')}"
+        sig_city_fr = self._get_signature_city(client_data, lang="fr")
 
         col_x = [35.0, 60.0, 190.0, 310.0, 440.0, 560.0]
         headers = [
@@ -742,8 +898,9 @@ class PDFGenerator:
                                  fontname=fname, fontsize=8.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.15, 0.25, 0.45))
                 p.insert_textbox(fitz.Rect(40.0, y_sig + 19.0, 285.0, y_sig + 32.0), shape_arabic("القائم بالتركيب والاعتماد"),
                                  fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.30, 0.30, 0.30))
-                p.insert_textbox(fitz.Rect(40.0, y_sig + 60.0, 285.0, y_sig + 74.0), "Cachet et Signature:",
+                p.insert_textbox(fitz.Rect(40.0, y_sig + 60.0, 285.0, y_sig + 74.0), f"Fait à {sig_city_fr}, le {today_str}",
                                  fontname=fname, fontsize=7.5, color=(0.40, 0.40, 0.40))
+                self._stamp_installer_seal_and_signature(p, seal_rect=fitz.Rect(165.0, y_sig + 16.0, 275.0, y_sig + 76.0), sig_rect=fitz.Rect(50.0, y_sig + 25.0, 160.0, y_sig + 65.0))
 
                 # Right: Client
                 p.draw_rect(fitz.Rect(305.0, y_sig, 560.0, y_sig + sig_h), color=(0.75, 0.80, 0.88), width=0.8)
@@ -753,8 +910,8 @@ class PDFGenerator:
                                  fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.30, 0.30, 0.30))
                 p.insert_textbox(fitz.Rect(310.0, y_sig + 33.0, 555.0, y_sig + 46.0), "(Mention \"Bon pour réception et conformité\")",
                                  fontname=fname, fontsize=7.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.40, 0.40, 0.40))
-                p.insert_textbox(fitz.Rect(310.0, y_sig + 60.0, 555.0, y_sig + 74.0), "Date et Signature:",
-                                 fontname=fname, fontsize=7.5, color=(0.40, 0.40, 0.40))
+                p.insert_textbox(fitz.Rect(310.0, y_sig + 60.0, 555.0, 74.0 + y_sig), f"Fait le {today_str} | Date et Signature:",
+                                 fontname=fname, fontsize=7.2, color=(0.40, 0.40, 0.40))
 
             # Page Numbering Footer (all pages)
             p.insert_textbox(fitz.Rect(35.0, 814.0, 560.0, 828.0), f"Page {page_idx + 1} / {total_pages}",
@@ -806,6 +963,194 @@ class PDFGenerator:
 
         return pages_b64
 
+    def generate_installer_agreement(
+        self,
+        client_data: dict,
+        purchases: list[dict] = None,
+        output_path: str = None
+    ) -> bytes:
+        """
+        Generate official stamped copy of the Installer's Agrément for 1er dossier.
+        Endorsed at the bottom of each page (supporting 1, 2, or multi-page documents) with:
+        '« تسلم نسخة واحدة إلى السيد : [Client Name] »'
+        '« من أجل رخصة اقتناء »'
+        accompanied by the installer's stamp, signature, and date.
+        
+        Strictly conserves ISO A4 dimensions (595 x 842 pt) without print spillover.
+        Uses the uploaded agreement document from installer_profile, or templates_pdf/agreement_template.pdf,
+        or dynamically synthesizes a vector certificate if no document has been uploaded yet.
+        """
+        client = self._prepare_client_data(client_data)
+        c_full = (client.get("full_name") or "").strip()
+        c_comp = (client.get("company_name") or "").strip()
+        if c_full and c_comp:
+            client_name = f"{c_full} ({c_comp})"
+        else:
+            client_name = c_full or c_comp or "الزبون"
+
+        today_str = date.today().strftime("%d/%m/%Y")
+        inst_city = self._get_signature_city(client, lang="ar")
+        inst_city_fr = self._get_signature_city(client, lang="fr")
+
+        profile = getattr(self, "installer_profile", {}) or {}
+        doc_b64 = (profile.get("agreement_doc_b64") or "").strip()
+
+        src_doc = None
+        if doc_b64:
+            try:
+                s_clean = doc_b64.split(";base64,", 1)[1] if ";base64," in doc_b64 else doc_b64
+                raw_bytes = base64.b64decode(s_clean)
+                try:
+                    src_doc = fitz.open(stream=raw_bytes, filetype="pdf")
+                except Exception:
+                    # If image (PNG/JPEG)
+                    img_doc = fitz.open(stream=raw_bytes)
+                    src_doc = fitz.open()
+                    ip = src_doc.new_page(width=595.0, height=842.0)
+                    ip.insert_image(ip.rect, stream=raw_bytes, keep_proportion=True)
+            except Exception:
+                src_doc = None
+
+        out_doc = fitz.open()
+        fname = "helv"
+        if self.font_path and os.path.exists(self.font_path):
+            fname = "f0"
+
+        if src_doc is not None and len(src_doc) > 0:
+            # Multi-page stamping conserving strict A4
+            for page_idx in range(len(src_doc)):
+                p = out_doc.new_page(width=595.0, height=842.0)
+                if fname == "f0":
+                    try:
+                        p.insert_font(fontname="f0", fontfile=self.font_path)
+                    except Exception:
+                        pass
+
+                # Fit source page into upper 698 pt of A4 (leaving 144 pt at bottom for margins & boxes)
+                template_rect = fitz.Rect(15.0, 10.0, 580.0, 698.0)
+                p.show_pdf_page(template_rect, src_doc, page_idx)
+
+                # Bottom Area: y = 706 to 822 (20 pt / 7.05 mm safe margin from physical paper bottom)
+                # Left: Endorsement box
+                box_rect = fitz.Rect(35.0, 706.0, 365.0, 822.0)
+                p.draw_rect(box_rect, color=(0.15, 0.25, 0.45), fill=(0.98, 0.99, 1.0), width=1.2)
+                p.draw_rect(fitz.Rect(37.0, 708.0, 363.0, 820.0), color=(0.80, 0.85, 0.92), width=0.5)
+
+                p.insert_textbox(fitz.Rect(40.0, 710.0, 360.0, 724.0), shape_arabic("تخصيص رسمي للنسخة - MENTION OBLIGATOIRE"),
+                                 fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.20, 0.30, 0.50))
+                p.draw_line(fitz.Point(70.0, 726.0), fitz.Point(330.0, 726.0), color=(0.20, 0.30, 0.50), width=0.6)
+
+                t_ar1 = f"« تسلم نسخة واحدة إلى السيد : {client_name} »"
+                t_ar2 = "« من أجل رخصة اقتناء »"
+                p.insert_textbox(fitz.Rect(40.0, 730.0, 360.0, 754.0), shape_arabic(t_ar1),
+                                 fontname=fname, fontsize=10.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.08, 0.15, 0.35))
+                p.insert_textbox(fitz.Rect(40.0, 754.0, 360.0, 776.0), shape_arabic(t_ar2),
+                                 fontname=fname, fontsize=11.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.70, 0.15, 0.15))
+
+                t_fr = f"Délivré en un seul exemplaire à : {client_name}\naux fins d'obtention de l'autorisation d'acquisition"
+                p.insert_textbox(fitz.Rect(40.0, 777.0, 360.0, 804.0), shape_arabic(t_fr, base_dir='L'),
+                                 fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.35, 0.40, 0.50))
+
+                p.insert_textbox(fitz.Rect(40.0, 805.0, 360.0, 819.0), shape_arabic(f"حرر بـ: {inst_city} في: {today_str}"),
+                                 fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.25, 0.30, 0.40))
+
+                # Right: Installer Stamp & Signature box
+                sig_box = fitz.Rect(375.0, 706.0, 560.0, 822.0)
+                p.draw_rect(sig_box, color=(0.15, 0.25, 0.45), fill=(0.98, 0.99, 1.0), width=1.0)
+                p.draw_rect(fitz.Rect(377.0, 708.0, 558.0, 820.0), color=(0.80, 0.85, 0.92), width=0.5)
+
+                p.insert_textbox(fitz.Rect(380.0, 710.0, 555.0, 724.0), shape_arabic("المتعامل المعتمد"),
+                                 fontname=fname, fontsize=9.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.15, 0.20, 0.35))
+                p.insert_textbox(fitz.Rect(380.0, 723.0, 555.0, 736.0), "Cachet et Signature de l'Opérateur Agréé",
+                                 fontname=fname, fontsize=6.8, align=fitz.TEXT_ALIGN_CENTER, color=(0.35, 0.40, 0.50))
+                p.draw_line(fitz.Point(400.0, 738.0), fitz.Point(535.0, 738.0), color=(0.20, 0.30, 0.50), width=0.5)
+
+                # Stamp installer seal and signature if available
+                self._stamp_installer_seal_and_signature(p, seal_rect=fitz.Rect(450.0, 742.0, 545.0, 816.0), sig_rect=fitz.Rect(385.0, 749.0, 465.0, 810.0))
+        else:
+            # Fallback to vector certificate if no document is uploaded or found
+            p = out_doc.new_page(width=595.0, height=842.0)
+            if fname == "f0":
+                try:
+                    p.insert_font(fontname="f0", fontfile=self.font_path)
+                except Exception:
+                    pass
+
+            p.draw_rect(fitz.Rect(30.0, 30.0, 565.0, 812.0), color=(0.18, 0.28, 0.48), width=1.2)
+            p.draw_rect(fitz.Rect(32.0, 32.0, 563.0, 810.0), color=(0.75, 0.80, 0.88), width=0.5)
+
+            p.insert_textbox(fitz.Rect(40.0, 38.0, 555.0, 54.0), shape_arabic("الجمهورية الجزائرية الديمقراطية الشعبية"),
+                             fontname=fname, fontsize=10.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.15, 0.20, 0.35))
+            p.insert_textbox(fitz.Rect(40.0, 52.0, 555.0, 66.0), "RÉPUBLIQUE ALGÉRIENNE DÉMOCRATIQUE ET POPULAIRE",
+                             fontname=fname, fontsize=8.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.30, 0.35, 0.45))
+            p.insert_textbox(fitz.Rect(40.0, 68.0, 555.0, 82.0), shape_arabic("وزارة الداخلية والجماعات المحلية والتهيئة العمرانية"),
+                             fontname=fname, fontsize=9.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.15, 0.20, 0.35))
+
+            p.draw_rect(fitz.Rect(35.0, 95.0, 560.0, 145.0), color=(0.18, 0.28, 0.48), fill=(0.94, 0.96, 0.99), width=1.0)
+            p.insert_textbox(fitz.Rect(40.0, 99.0, 555.0, 118.0), shape_arabic("نسخة من رخصة اعتماد القائم بتركيب منظومات المراقبة بالكاميرات"),
+                             fontname=fname, fontsize=11.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.10, 0.20, 0.40))
+            p.insert_textbox(fitz.Rect(40.0, 118.0, 555.0, 132.0), "COPIE DE L'AGRÉMENT D'INSTALLATEUR DE SYSTÈMES DE VIDÉOSURVEILLANCE",
+                             fontname=fname, fontsize=8.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.18, 0.28, 0.48))
+
+            # Installer Info
+            inst_comp = profile.get("company_name") or "Entreprise d'Installation Agréée"
+            inst_name = profile.get("installer_name") or "Responsable Technique"
+            inst_ref = profile.get("accreditation_ref") or "Agrément Ministère de l'Intérieur (En cours)"
+            inst_phone = profile.get("phone") or "Non renseigné"
+
+            p.draw_rect(fitz.Rect(35.0, 155.0, 560.0, 245.0), color=(0.78, 0.82, 0.88), fill=(0.97, 0.98, 1.0), width=0.8)
+            p.insert_textbox(fitz.Rect(45.0, 160.0, 290.0, 178.0), f"Entreprise: {inst_comp}", fontname=fname, fontsize=8.5)
+            p.insert_textbox(fitz.Rect(300.0, 160.0, 550.0, 178.0), shape_arabic(f"المؤسسة / الشركة: {inst_comp}", base_dir='L'), fontname=fname, fontsize=8.5, align=fitz.TEXT_ALIGN_RIGHT)
+            p.insert_textbox(fitz.Rect(45.0, 180.0, 290.0, 198.0), f"Responsable: {inst_name}", fontname=fname, fontsize=8.5)
+            p.insert_textbox(fitz.Rect(300.0, 180.0, 550.0, 198.0), shape_arabic(f"المسير / المسؤول: {inst_name}", base_dir='L'), fontname=fname, fontsize=8.5, align=fitz.TEXT_ALIGN_RIGHT)
+            p.insert_textbox(fitz.Rect(45.0, 200.0, 290.0, 218.0), f"N° d'Agrément: {inst_ref}", fontname=fname, fontsize=8.5)
+            p.insert_textbox(fitz.Rect(300.0, 200.0, 550.0, 218.0), shape_arabic(f"رقم الاعتماد: {inst_ref}", base_dir='L'), fontname=fname, fontsize=8.5, align=fitz.TEXT_ALIGN_RIGHT)
+            p.insert_textbox(fitz.Rect(45.0, 220.0, 290.0, 238.0), f"Téléphone / Ville: {inst_phone} | {inst_city}", fontname=fname, fontsize=8.5)
+            p.insert_textbox(fitz.Rect(300.0, 220.0, 550.0, 238.0), shape_arabic(f"الهاتف والمدينة: {inst_phone} | {inst_city}", base_dir='L'), fontname=fname, fontsize=8.5, align=fitz.TEXT_ALIGN_RIGHT)
+
+            # Prominent Endorsement Box
+            box_rect = fitz.Rect(35.0, 260.0, 560.0, 420.0)
+            p.draw_rect(box_rect, color=(0.15, 0.25, 0.45), fill=(0.99, 0.99, 1.0), width=1.5)
+            p.draw_rect(fitz.Rect(38.0, 263.0, 557.0, 417.0), color=(0.85, 0.88, 0.95), width=0.5)
+
+            p.insert_textbox(fitz.Rect(45.0, 270.0, 550.0, 288.0), shape_arabic("تخصيص رسمي للنسخة - AFFECTATION RÉGLEMENTAIRE DE LA COPIE"),
+                             fontname=fname, fontsize=9.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.18, 0.28, 0.48))
+            p.draw_line(fitz.Point(100.0, 290.0), fitz.Point(495.0, 290.0), color=(0.18, 0.28, 0.48), width=0.8)
+
+            t_ar = f"« تسلم نسخة واحدة إلى السيد : {client_name} »\n« من أجل رخصة اقتناء »"
+            p.insert_textbox(fitz.Rect(45.0, 300.0, 550.0, 355.0), shape_arabic(t_ar),
+                             fontname=fname, fontsize=12.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.08, 0.15, 0.35))
+
+            t_fr = f"Délivré en un seul exemplaire à : {client_name}\nAux fins de constitution du dossier de demande d'autorisation d'acquisition (1er Dossier)"
+            p.insert_textbox(fitz.Rect(45.0, 360.0, 550.0, 395.0), shape_arabic(t_fr, base_dir='L'),
+                             fontname=fname, fontsize=8.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.30, 0.35, 0.45))
+
+            # Bottom Signature & Seal
+            y_sig = 440.0
+            h_sig = 180.0
+            p.draw_rect(fitz.Rect(35.0, y_sig, 560.0, y_sig + h_sig), color=(0.78, 0.82, 0.88), fill=(0.97, 0.98, 1.0), width=0.8)
+            p.draw_line(fitz.Point(297.0, y_sig), fitz.Point(297.0, y_sig + h_sig), color=(0.78, 0.82, 0.88), width=0.8)
+
+            p.insert_textbox(fitz.Rect(45.0, y_sig + 15.0, 290.0, y_sig + 32.0), shape_arabic(f"حرر بـ: {inst_city} في: {today_str}"),
+                             fontname=fname, fontsize=9.0, color=(0.15, 0.20, 0.35))
+            p.insert_textbox(fitz.Rect(45.0, y_sig + 34.0, 290.0, y_sig + 50.0), f"Fait à {inst_city_fr}, le {today_str}",
+                             fontname=fname, fontsize=8.5, color=(0.35, 0.40, 0.50))
+
+            p.insert_textbox(fitz.Rect(305.0, y_sig + 15.0, 550.0, y_sig + 32.0), shape_arabic("المتعامل المعتمد"),
+                             fontname=fname, fontsize=10.0, align=fitz.TEXT_ALIGN_CENTER, color=(0.15, 0.20, 0.35))
+            p.insert_textbox(fitz.Rect(305.0, y_sig + 32.0, 550.0, y_sig + 46.0), "Cachet et Signature de l'Opérateur Agréé",
+                             fontname=fname, fontsize=7.5, align=fitz.TEXT_ALIGN_CENTER, color=(0.35, 0.40, 0.50))
+
+            self._stamp_installer_seal_and_signature(p, seal_rect=fitz.Rect(430.0, y_sig + 55.0, 530.0, y_sig + 145.0), sig_rect=fitz.Rect(340.0, y_sig + 65.0, 430.0, y_sig + 135.0))
+
+        doc_bytes = out_doc.tobytes()
+        if output_path:
+            os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)
+            with open(output_path, "wb") as f:
+                f.write(doc_bytes)
+
+        return doc_bytes
+
     def get_document_preview(self, client_data: dict, cameras: list[dict] = None, doc_type: str = "annex1") -> dict:
         """
         Generate in-memory document, render Pixmap PNGs, and return preview payload.
@@ -831,6 +1176,9 @@ class PDFGenerator:
             elif "pv" in dtype or "pose" in dtype or "reception" in dtype:
                 title = "Procès-Verbal de Réception / Bordereau de Livraison"
                 doc_bytes = self.generate_pv_pose(client_data, cameras_list, output_path=None)
+            elif "agree" in dtype or "agrement" in dtype or "agrément" in dtype or "اعتماد" in dtype:
+                title = "Agrément de l'Installateur (Copie)"
+                doc_bytes = self.generate_installer_agreement(client_data, cameras_list, output_path=None)
             else:
                 return {
                     "success": False,
@@ -840,7 +1188,7 @@ class PDFGenerator:
                     "page_count": 0,
                     "pages": [],
                     "pdf_base64": "",
-                    "error": f"Unknown document type: '{doc_type}'. Expected 'annex1', 'annex3', 'annex5', 'annex8', or 'pv_pose'."
+                    "error": f"Unknown document type: '{doc_type}'. Expected 'annex1', 'annex3', 'annex5', 'annex8', 'pv_pose', or 'agreement'."
                 }
 
             pages = self.generate_document_preview_pixmaps(doc_bytes, dpi=150)
@@ -907,13 +1255,15 @@ class PDFGenerator:
 
         p1 = os.path.join(client_dir, "annex1.pdf")
         p5 = os.path.join(client_dir, "annex5.pdf")
+        p_agree = os.path.join(client_dir, "agreement.pdf")
         p_pv = os.path.join(client_dir, "pv_reception.pdf")
 
         self.generate_annex1(client, purchases_list, output_name=p1)
         self.generate_annex5(client, purchases_list, output_name=p5)
+        self.generate_installer_agreement(client, purchases_list, output_path=p_agree)
         self.generate_pv_pose(client, purchases_list, output_path=p_pv)
 
-        return DossierResult(client_dir, p1, p5, pv_reception=p_pv)
+        return DossierResult(client_dir, p1, p5, pv_reception=p_pv, agreement=p_agree)
 
     def generate_second_dossier(
         self,

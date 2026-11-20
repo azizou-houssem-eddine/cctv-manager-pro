@@ -7,11 +7,26 @@ from api_bridge import JsApi
 from seed_data import seed_database
 
 @pytest.fixture
-def clean_test_env(tmp_path):
+def clean_test_env(tmp_path, monkeypatch):
+    import base64
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    import license_manager
+
+    priv = Ed25519PrivateKey.generate()
+    pub_b64 = base64.b64encode(
+        priv.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    ).decode("ascii")
+    monkeypatch.setattr(license_manager, "PUBLIC_KEY_B64", pub_b64)
+    monkeypatch.setattr(license_manager.verify_license, "__defaults__", (pub_b64,))
+
     db_file = str(tmp_path / "test_cctv.db")
     custom_dossiers = str(tmp_path / "Custom_Clients_Directory")
     db = DatabaseManager(db_file)
     db.initialize_db()
+    mid = license_manager.get_machine_id()
+    sig_b32 = base64.b32encode(priv.sign(f"{mid}:9999-12-31".encode("utf-8"))).decode("ascii").rstrip("=")
+    db.save_license_key(f"99991231-{sig_b32}")
     pdf_gen = PDFGenerator("templates_pdf")
     api = JsApi(db, pdf_gen)
     return {

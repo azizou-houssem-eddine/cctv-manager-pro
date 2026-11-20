@@ -4,10 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CCTV Manager Pro</title>
+    <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+    <link rel="alternate icon" href="assets/logo.png">
     <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
     <div class="app-container">
@@ -15,10 +14,7 @@
         <aside class="sidebar">
             <div class="brand">
                 <div class="logo-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
-                        <circle cx="12" cy="13" r="4"/>
-                    </svg>
+                    <img src="assets/logo.svg" alt="CCTV Manager Pro Logo" style="width: 100%; height: 100%; object-fit: contain;">
                 </div>
                 <div class="brand-text">
                     <h2>CCTV Manager</h2>
@@ -64,6 +60,12 @@
             </nav>
 
             <div class="sidebar-footer">
+                <div class="sidebar-actions" style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; width: 100%;">
+                    <div id="licenseSidebarBadge" class="license-sidebar-badge" onclick="openLicenseModal()" title="État de la licence logicielle">
+                        <span class="badge-dot dot-valid" id="licenseSidebarDot"></span>
+                        <span id="licenseSidebarText" data-i18n="license_active">Licence Pro</span>
+                    </div>
+                </div>
                 <div class="lang-switch">
                     <button id="btnLangFr" class="lang-btn active" onclick="switchLanguage('fr')">FR</button>
                     <button id="btnLangAr" class="lang-btn" onclick="switchLanguage('ar')">العربية</button>
@@ -92,7 +94,7 @@
 
                 <!-- KPI Cards Grid -->
                 <div class="stats-grid">
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer;" onclick="navigateToTab('inventory'); switchInventorySubtab('serials');" title="Gérer le stock des numéros de série">
                         <div class="stat-header">
                             <span class="stat-label" data-i18n="kpi_in_stock">Caméras en Stock</span>
                             <div class="stat-icon icon-stock">📦</div>
@@ -101,7 +103,7 @@
                         <span class="stat-caption" data-i18n="kpi_available_for_install">Disponibles pour installation</span>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer;" onclick="navigateToTab('inventory'); switchInventorySubtab('serials'); setInventoryStatusFilter('assigned');" title="Voir les équipements assignés">
                         <div class="stat-header">
                             <span class="stat-label" data-i18n="kpi_assigned">Équipements Déployés</span>
                             <div class="stat-icon icon-assigned">📹</div>
@@ -110,7 +112,7 @@
                         <span class="stat-caption" data-i18n="kpi_assigned_clients">Assignés aux clients</span>
                     </div>
 
-                    <div class="stat-card">
+                    <div class="stat-card" style="cursor: pointer;" onclick="navigateToTab('clients');" title="Voir l'annuaire des clients">
                         <div class="stat-header">
                             <span class="stat-label" data-i18n="kpi_clients">Clients Enregistrés</span>
                             <div class="stat-icon icon-clients">👥</div>
@@ -119,13 +121,22 @@
                         <span class="stat-caption" data-i18n="kpi_total_dossiers">Dossiers créés</span>
                     </div>
 
-                    <div class="stat-card stat-alert" id="kpiAlertCard">
+                    <div class="stat-card stat-alert" id="kpiAlertCard" style="cursor: pointer;" onclick="navigateToTab('inventory'); switchInventorySubtab('models');" title="Voir les alertes de seuil des modèles">
                         <div class="stat-header">
                             <span class="stat-label" data-i18n="kpi_low_stock">Alertes Stock Bas</span>
                             <div class="stat-icon icon-alert">⚠️</div>
                         </div>
                         <div class="stat-value" id="kpiAlertVal">0</div>
                         <span class="stat-caption" id="kpiAlertCaption" data-i18n="kpi_models_under_threshold">Modèles sous le seuil</span>
+                    </div>
+
+                    <div class="stat-card" style="cursor: pointer;" onclick="navigateToTab('inventory'); switchInventorySubtab('models');" title="Consulter et gérer le catalogue de modèles">
+                        <div class="stat-header">
+                            <span class="stat-label" data-i18n="kpi_models">Modèles de Caméras</span>
+                            <div class="stat-icon icon-models">🏷️</div>
+                        </div>
+                        <div class="stat-value" id="kpiModelsVal">0</div>
+                        <span class="stat-caption" data-i18n="kpi_catalog_references">Références au catalogue</span>
                     </div>
                 </div>
 
@@ -201,103 +212,318 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Recent Clients Activity Table -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h3 data-i18n="recent_clients_title">Derniers Clients Enregistrés</h3>
+                            <span class="badge" data-i18n="recent_activity_badge">Activité Récente</span>
+                        </div>
+                        <button class="btn btn-secondary btn-sm" onclick="navigateToTab('clients')">
+                            <span data-i18n="view_all_clients">Voir Tous les Clients →</span>
+                        </button>
+                    </div>
+                    <div class="table-wrapper dashboard-table-wrapper">
+                        <table class="data-table" id="recentClientsTable">
+                            <thead>
+                                <tr>
+                                    <th data-i18n="client_name">Client / Société</th>
+                                    <th data-i18n="doc_number">N° Pièce / RC</th>
+                                    <th data-i18n="phone">Téléphone</th>
+                                    <th data-i18n="equipment_count">Caméras</th>
+                                    <th data-i18n="action">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="empty-row"><td colspan="5" data-i18n="no_recent_clients">Aucune activité récente</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </section>
 
             <!-- TAB 1: INVENTORY -->
             <section id="tab-inventory" class="tab-pane">
-                <header class="pane-header">
-                    <h1 data-i18n="inventory_title">Gestion de l'Inventaire & Scannage</h1>
-                    <p class="subtitle" data-i18n="inventory_sub">Scannez des codes-barres ou sérials et suivez le stock en temps réel.</p>
-                </header>
-
-                <div class="card scan-card">
-                    <div class="card-header flex-between">
-                        <h3 data-i18n="scan_equipment">Scanner Équipement</h3>
-                        <button id="btnScannerSound" class="btn btn-secondary btn-sm" onclick="toggleScannerSound()" title="Son du scanner">
-                            <span id="soundIcon">🔊</span> <span data-i18n="sound_on">Bip Activé</span>
+                <header class="pane-header flex-between">
+                    <div>
+                        <h1 data-i18n="inventory_title">Gestion de l'Inventaire & Scannage</h1>
+                        <p class="subtitle" data-i18n="inventory_sub">Scannez des codes-barres ou sérials et suivez le stock en temps réel.</p>
+                    </div>
+                    <div class="header-actions flex-align-center gap-8">
+                        <button class="btn btn-secondary btn-sm" onclick="openUnifiedImportModal()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            <span data-i18n="btn_import_unified">Importer Excel / CSV</span>
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="exportFilteredSerials('excel')" title="Exporter Excel">
+                            <span>📊 Excel</span>
                         </button>
                     </div>
-                    <div class="scan-controls">
-                        <div class="form-group flex-1">
-                            <label data-i18n="select_model">Modèle de Caméra</label>
-                            <select id="scanModelSelect" class="form-control">
-                                <option value="" data-i18n="select_model_placeholder">-- Choisir un modèle --</option>
-                            </select>
+                </header>
+
+                <!-- Intuitive Inventory Subtab Switcher -->
+                <div class="inventory-subtabs-nav">
+                    <button type="button" class="inv-subtab-btn active" id="invSubtabBtn_serials" onclick="switchInventorySubtab('serials')">
+                        <span class="subtab-icon">🔢</span>
+                        <div class="subtab-text-group">
+                            <span class="subtab-title" data-i18n="inv_tab_serials">Numéros de Série & Scannage</span>
+                            <span class="subtab-sub" data-i18n="inv_tab_serials_desc">Lecteur code-barres & stock matériel</span>
                         </div>
-                        <div class="form-group flex-2">
-                            <label data-i18n="serial_num">N° de Série (Entrée pour valider)</label>
-                            <div class="input-with-icon">
-                                <input type="text" id="scannerInput" class="form-control" placeholder="Scanner ici..." autocomplete="off">
-                                <span class="input-icon">⚡</span>
-                            </div>
+                        <span id="invSerialsCountBadge" class="badge">0</span>
+                    </button>
+                    <button type="button" class="inv-subtab-btn" id="invSubtabBtn_models" onclick="switchInventorySubtab('models')">
+                        <span class="subtab-icon">🏷️</span>
+                        <div class="subtab-text-group">
+                            <span class="subtab-title" data-i18n="inv_tab_models">Modèles & Catalogue</span>
+                            <span class="subtab-sub" data-i18n="inv_tab_models_desc">Catalogue des références & seuils</span>
                         </div>
-                    </div>
+                        <span id="invModelsCountBadge" class="badge">0</span>
+                    </button>
                 </div>
 
-                <div class="inventory-split-grid">
-                    <!-- Staged Batch Card -->
-                    <div class="card">
-                        <div class="card-header flex-between">
-                            <div>
-                                <h3 data-i18n="staged_batch">Lot en attente</h3>
-                                <span id="stagedCountBadge" class="badge">0 scanné(s)</span>
+                <!-- SUBTAB PANE 1: SERIALS & SCANNING -->
+                <div class="inv-subtab-pane active" id="invPane_serials">
+                    <!-- Ergonomic Scanning Dock -->
+                    <div class="card scanning-dock-card">
+                        <div class="scanning-dock-top">
+                            <!-- Model Selection with Live Stock Pill & Quick Add -->
+                            <div class="dock-model-select-group">
+                                <label data-i18n="select_model">Modèle de Caméra :</label>
+                                <div class="dock-select-wrap">
+                                    <select id="scanModelSelect" class="form-control" onchange="handleScanModelChange()">
+                                        <option value="" data-i18n="select_model_placeholder">-- Choisir un modèle --</option>
+                                    </select>
+                                    <span id="modelStockPill" class="badge badge-info" style="display:none;">0 en stock</span>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="openQuickAddModelModal()" title="Créer un modèle directement">
+                                        <span>➕</span> <span data-i18n="new_model_btn">Nouveau</span>
+                                    </button>
+                                </div>
                             </div>
-                            <div class="btn-group">
-                                <button id="btnSaveBatch" class="btn btn-primary" onclick="saveStagedBatch()">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
-                                    <span data-i18n="save">Enregistrer</span>
+
+                            <!-- Mode Switch Toggle: Direct vs Batch -->
+                            <div class="scan-mode-selector">
+                                <button type="button" class="scan-mode-btn active" id="btnModeDirect" onclick="setScanMode('direct')">
+                                    <span class="mode-icon">⚡</span>
+                                    <span data-i18n="scan_mode_direct">Direct (Auto-Save)</span>
                                 </button>
-                                <button id="btnClearBatch" class="btn btn-secondary" onclick="clearStagedBatch()" data-i18n="clear">Effacer</button>
+                                <button type="button" class="scan-mode-btn" id="btnModeBatch" onclick="setScanMode('batch')">
+                                    <span class="mode-icon">📋</span>
+                                    <span data-i18n="scan_mode_batch">Par Lot (Staging)</span>
+                                </button>
+                            </div>
+
+                            <!-- Sound Toggle & Session Counter -->
+                            <div class="dock-tools">
+                                <button id="btnScannerSound" class="btn btn-secondary btn-sm" onclick="toggleScannerSound()" title="Son du scanner">
+                                    <span id="soundIcon">🔊</span> <span data-i18n="sound_on">Bip Activé</span>
+                                </button>
+                                <div class="session-counter-pill" title="Nombre de numéros scannés avec succès dans cette session">
+                                    <span class="counter-label" data-i18n="session_scanned">Session</span> :
+                                    <strong id="sessionScanCount">0</strong>
+                                </div>
                             </div>
                         </div>
-                        <div class="table-wrapper staged-wrapper">
-                            <table class="data-table" id="stagedTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 60px;">#</th>
-                                        <th data-i18n="serial_num">N° de Série</th>
-                                        <th style="width: 80px;" data-i18n="actions">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr class="empty-row"><td colspan="3" data-i18n="no_scanned_yet">Aucun numéro scanné</td></tr>
-                                </tbody>
-                            </table>
+
+                        <!-- Main Scanner Input Bar -->
+                        <div class="scanning-input-row">
+                            <div class="input-with-icon scanner-input-wrapper">
+                                <input type="text" id="scannerInput" class="form-control scanner-dock-input" placeholder="Prêt pour le lecteur code-barres... Scanner ou taper et Entrée" autocomplete="off">
+                                <span class="input-icon">⚡</span>
+                            </div>
+                            <button type="button" class="btn btn-primary btn-scan-action" onclick="handleManualScanSubmit()">
+                                <span data-i18n="validate_btn">Valider</span>
+                            </button>
+                        </div>
+
+                        <!-- Staged Drawer (Appears only in Batch Mode) -->
+                        <div id="stagedBatchDrawer" class="staged-batch-drawer" style="display:none;">
+                            <div class="staged-drawer-header flex-between">
+                                <div class="flex-align-center gap-10">
+                                    <strong data-i18n="staged_batch">Lot en attente</strong>
+                                    <span id="stagedCountBadge" class="badge">0 scanné(s)</span>
+                                </div>
+                                <div class="btn-group">
+                                    <button id="btnSaveBatch" class="btn btn-primary btn-sm" onclick="saveStagedBatch()">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                                        <span data-i18n="save">Enregistrer le lot</span>
+                                    </button>
+                                    <button id="btnClearBatch" class="btn btn-secondary btn-sm" onclick="clearStagedBatch()" data-i18n="clear">Effacer</button>
+                                </div>
+                            </div>
+                            <div class="staged-tags-container" id="stagedTagsContainer">
+                                <span class="empty-staged-hint" data-i18n="no_scanned_yet">Aucun numéro scanné</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Live Inventory Card -->
-                    <div class="card">
-                        <div class="card-header flex-between">
+                    <!-- Full-Width Live Inventory Workspace -->
+                    <div class="card inventory-workspace-card">
+                        <div class="card-header flex-between flex-wrap gap-12">
                             <div class="flex-align-center gap-10">
                                 <h3 data-i18n="existing_db">Stock en Base de Données</h3>
                                 <span id="totalStockBadge" class="badge">0 caméras</span>
                             </div>
+
+                            <!-- Status Filter Pills (Tous / En Stock / Assignés) -->
+                            <div class="status-filter-pills">
+                                <button type="button" class="filter-pill active" id="pillFilterAll" onclick="setInventoryStatusFilter('all')">
+                                    <span data-i18n="filter_all">Tous</span>
+                                    <span class="pill-count" id="countFilterAll">0</span>
+                                </button>
+                                <button type="button" class="filter-pill" id="pillFilterInStock" onclick="setInventoryStatusFilter('in_stock')">
+                                    <span class="status-dot in-stock-dot"></span>
+                                    <span data-i18n="filter_in_stock">En Stock</span>
+                                    <span class="pill-count" id="countFilterInStock">0</span>
+                                </button>
+                                <button type="button" class="filter-pill" id="pillFilterAssigned" onclick="setInventoryStatusFilter('assigned')">
+                                    <span class="status-dot assigned-dot"></span>
+                                    <span data-i18n="filter_assigned">Assignés</span>
+                                    <span class="pill-count" id="countFilterAssigned">0</span>
+                                </button>
+                            </div>
+
+                            <!-- Search & Model Filters -->
                             <div class="filter-controls flex-align-center gap-8">
-                                <input type="text" id="inventorySearchInput" class="form-control form-control-sm" placeholder="Filtrer sérials..." oninput="debounceInventorySearch()" style="width: 150px;">
-                                <select id="filterModelSelect" class="form-control form-control-sm" onchange="loadInventoryTable()">
+                                <div class="search-box-compact">
+                                    <input type="text" id="inventorySearchInput" class="form-control form-control-sm" placeholder="🔍 Rechercher sérial, client..." oninput="debounceInventorySearch()">
+                                </div>
+                                <select id="filterModelSelect" class="form-control form-control-sm" onchange="loadInventoryTable()" style="max-width: 200px;">
                                     <option value="">Tous les modèles</option>
                                 </select>
-                                <button class="btn btn-secondary btn-sm" onclick="openCsvImportModal()" data-i18n="btn_import_csv">
-                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-                                    <span data-i18n="import_csv">Importer CSV</span>
-                                </button>
-                                <button class="btn btn-secondary btn-sm" onclick="exportFilteredSerials('csv')" title="Exporter CSV">
-                                    <span>📄 CSV</span>
-                                </button>
-                                <button class="btn btn-secondary btn-sm" onclick="exportFilteredSerials('excel')" title="Exporter Excel">
-                                    <span>📊 Excel</span>
+                                <button id="btnBatchDelete" class="btn btn-danger btn-sm" onclick="handleBatchDeleteSerials()" style="display:none;" title="Supprimer les numéros sélectionnés">
+                                    <span>🗑️</span> <span data-i18n="delete_selected">Supprimer</span> (<span id="batchDeleteCount">0</span>)
                                 </button>
                             </div>
                         </div>
+
                         <div class="table-wrapper inventory-wrapper">
                             <table class="data-table" id="inventoryTable">
                                 <thead>
                                     <tr>
-                                        <th data-i18n="serial_num">N° Série</th>
+                                        <th style="width: 44px; text-align: center;">
+                                            <input type="checkbox" id="selectAllSerialsCheckbox" onchange="handleToggleSelectAllSerials(this)" title="Tout sélectionner">
+                                        </th>
+                                        <th data-i18n="serial_num">N° de Série</th>
                                         <th data-i18n="model">Modèle</th>
                                         <th data-i18n="status">État</th>
                                         <th data-i18n="assigned_to">Assigné à</th>
+                                        <th style="width: 100px; text-align: center;" data-i18n="actions">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBTAB PANE 2: MODELS & CATALOG -->
+                <div class="inv-subtab-pane" id="invPane_models">
+                    <!-- Catalog KPI Summary Cards Bar -->
+                    <div class="models-stats-bar">
+                        <div class="model-stat-pill">
+                            <div class="msp-icon" style="background: rgba(79, 70, 229, 0.1); color: var(--color-accent-primary);">🏷️</div>
+                            <div class="msp-data">
+                                <span class="msp-label" data-i18n="stat_total_models">Modèles au Catalogue</span>
+                                <strong class="msp-val" id="modelStatTotalModels">0</strong>
+                            </div>
+                        </div>
+                        <div class="model-stat-pill">
+                            <div class="msp-icon" style="background: rgba(5, 150, 105, 0.1); color: var(--color-success);">📦</div>
+                            <div class="msp-data">
+                                <span class="msp-label" data-i18n="stat_total_stock">Total Caméras en Stock</span>
+                                <strong class="msp-val" id="modelStatTotalStock">0</strong>
+                            </div>
+                        </div>
+                        <div class="model-stat-pill">
+                            <div class="msp-icon" style="background: rgba(225, 29, 72, 0.1); color: var(--color-danger);">⚠️</div>
+                            <div class="msp-data">
+                                <span class="msp-label" data-i18n="stat_alert_models">Modèles sous le Seuil</span>
+                                <strong class="msp-val" id="modelStatAlertModels">0</strong>
+                            </div>
+                        </div>
+                        <div class="model-stat-actions">
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="openUnifiedImportModal('catalog')">
+                                <span>📥</span> <span data-i18n="btn_import_catalog">Importer Catalogue (Excel)</span>
+                            </button>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="toggleAddModelDrawer(true)">
+                                <span>➕</span> <span data-i18n="add_model">Nouveau Modèle</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Collapsible Model Registration Form -->
+                    <div class="card" id="addModelCard" style="margin-bottom: 20px;">
+                        <div class="card-header flex-between">
+                            <div class="flex-align-center gap-8">
+                                <span>➕</span>
+                                <h3 data-i18n="add_model">Ajouter un Modèle au Catalogue</h3>
+                            </div>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleAddModelDrawer()" title="Réduire/Agrandir le formulaire">
+                                <span id="addModelChevron">▲</span>
+                            </button>
+                        </div>
+                        <div id="addModelBody">
+                            <form id="addModelForm" onsubmit="handleAddModel(event)">
+                                <div class="form-grid">
+                                    <div class="form-group span-2">
+                                        <label data-i18n="int_model_name">Marque & Modèle (interne) *</label>
+                                        <input type="text" id="m_name" class="form-control" required placeholder="ex: Hikvision DS-2CD2143G2-I">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="equip_desig">Désignation (Annexe 1)</label>
+                                        <input type="text" id="m_desig" class="form-control" placeholder="ex: كاميرا مراقبة خارجية">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="equip_nature">Nature (Annexe 1)</label>
+                                        <input type="text" id="m_nature" class="form-control" placeholder="ex: IP Dome 4MP">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="category">Section (القسم)</label>
+                                        <input type="text" id="m_cat" class="form-control" placeholder="ex: القسم أ" value="القسم أ">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="sub_category">Sous-section (الفرع)</label>
+                                        <input type="text" id="m_subcat" class="form-control" placeholder="ex: الفرع 1" value="الفرع 1">
+                                    </div>
+                                    <div class="form-group">
+                                        <label data-i18n="min_stock_threshold">Seuil Alerte Stock Bas</label>
+                                        <input type="number" id="m_threshold" class="form-control" min="0" max="999" value="5" placeholder="5">
+                                    </div>
+                                </div>
+                                <div style="margin-top: 14px; display: flex; gap: 10px;">
+                                    <button type="submit" class="btn btn-primary" data-i18n="save_model">Enregistrer le Modèle</button>
+                                    <button type="button" class="btn btn-secondary" onclick="resetAddModelForm()" data-i18n="clear">Vider</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Registered Models Interactive Table Card -->
+                    <div class="card">
+                        <div class="card-header flex-between flex-wrap gap-12">
+                            <div class="flex-align-center gap-10">
+                                <h3 data-i18n="registered_models">Modèles Enregistrés</h3>
+                                <span id="modelsCountBadge" class="badge">0 modèles</span>
+                            </div>
+                            <div class="search-box">
+                                <input type="text" id="modelFilterSearchInput" class="form-control form-control-sm" placeholder="🔍 Filtrer les modèles, désignations..." data-i18n-placeholder="search_models_placeholder" oninput="filterModelsTable()">
+                            </div>
+                        </div>
+                        <div class="table-wrapper">
+                            <table class="data-table" id="modelsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px;">ID</th>
+                                        <th data-i18n="int_model_name">Marque & Modèle</th>
+                                        <th data-i18n="equip_desig">Désignation (Annexe 1)</th>
+                                        <th data-i18n="equip_nature">Nature (Annexe 1)</th>
+                                        <th data-i18n="category">Section</th>
+                                        <th data-i18n="sub_category">Sous-section</th>
+                                        <th data-i18n="stock" style="text-align: center;">En Stock / Total</th>
+                                        <th data-i18n="threshold" style="width: 90px; text-align: center;">Seuil Min.</th>
+                                        <th style="width: 140px; text-align: center;" data-i18n="actions">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -317,23 +543,195 @@
                 </header>
 
                 <div class="clients-layout">
-                    <!-- Client Form (Scrollable) -->
+                    <!-- Client Directory & Actions (Master Panel) -->
+                    <div class="card client-directory-card">
+                        <!-- Modular Multi-Dossier Status Bar (R4) -->
+                        <div class="dossier-selector-bar">
+                            <div class="dossier-pill active" id="pillDossier1" onclick="selectDossierMode(1)">
+                                <span class="dossier-badge active-badge">1er Dossier</span>
+                                <strong data-i18n="dossier_1_title">Autorisation d'Acquisition</strong>
+                                <span class="dossier-sub" data-i18n="dossier_1_sub">Annexes 1 & 5 + PV de Pose</span>
+                            </div>
+                            <div class="dossier-pill" id="pillDossier2" onclick="selectDossierMode(2)">
+                                <span class="dossier-badge active-badge" id="badgeDossier2" data-i18n="dossier_2_badge_active">2ème Dossier</span>
+                                <strong data-i18n="dossier_2_title">2ème Dossier (Exploitation)</strong>
+                                <span class="dossier-sub" data-i18n="dossier_2_sub">Annexe 3 (Tableau Étendu) & Annexe 8</span>
+                            </div>
+                        </div>
+
+                        <div class="card-header flex-between directory-header-bar">
+                            <div class="search-box">
+                                <input type="text" id="clientSearchInput" class="form-control" placeholder="🔍 Rechercher par nom, ID, téléphone..." oninput="loadClientsTable()">
+                            </div>
+                            <div class="flex-align-center gap-10">
+                                <span id="clientsCountBadge" class="badge">0 clients</span>
+                                <button type="button" class="btn btn-primary btn-sm" onclick="startNewClientRegistration()">
+                                    <span>➕</span> <span data-i18n="btn_new_client">Nouveau Client</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="table-wrapper directory-wrapper">
+                            <table class="data-table" id="clientsTable">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 48px;">ID</th>
+                                        <th data-i18n="full_name">Nom / Entreprise</th>
+                                        <th data-i18n="phone">Téléphone</th>
+                                        <th data-i18n="doc_num">N° Document</th>
+                                        <th data-i18n="cameras" style="text-align: center;">Caméras</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Populated via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Active Selected Client Context Strip -->
+                        <div id="selectedClientStrip" class="selected-client-strip empty">
+                            <div class="strip-icon">👤</div>
+                            <div class="strip-details">
+                                <span id="selectedClientStripText" data-i18n="no_client_selected_hint">Sélectionnez un client dans la liste pour activer les actions.</span>
+                            </div>
+                        </div>
+
+                        <!-- Structured & Categorized Actions Bar -->
+                        <div class="client-actions-container">
+                            <!-- Category: Equipment -->
+                            <div class="action-category-group">
+                                <span class="action-category-label" data-i18n="action_group_equipment">Équipements</span>
+                                <div class="action-buttons-row">
+                                    <button id="btnAssignCam" class="btn btn-accent btn-sm" onclick="openAssignModal()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+                                        <span data-i18n="assign_camera">Assigner Caméra</span>
+                                    </button>
+                                    <button id="btnReturnCam" class="btn btn-secondary btn-sm" onclick="openReturnModal()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                                        <span data-i18n="return_camera">Retour Caméra</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Category: Regulatory PDFs -->
+                            <div class="action-category-group">
+                                <span class="action-category-label" data-i18n="action_group_dossiers">Dossiers Réglementaires</span>
+                                <div class="action-buttons-row">
+                                    <button id="btnPreviewDossier" class="btn btn-secondary btn-sm" onclick="openSelectedClientPreview()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                                        <span data-i18n="preview_docs">Aperçu</span>
+                                    </button>
+                                    <button id="btnGenerateDossier" class="btn btn-primary btn-sm" onclick="generateDossierForSelectedClient()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                        <span data-i18n="first_dossier">1er Dossier (PDF)</span>
+                                    </button>
+                                    <button id="btnGenerateSecondDossier" class="btn btn-secondary btn-sm" onclick="generateSecondDossierForSelectedClient()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                        <span data-i18n="second_dossier">2ème Dossier (PDF)</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Category: Files & Modification -->
+                            <div class="action-category-group">
+                                <span class="action-category-label" data-i18n="action_group_management">Fichiers & Modif</span>
+                                <div class="action-buttons-row">
+                                    <button id="btnEditClient" class="btn btn-secondary btn-sm" onclick="editSelectedClient()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        <span data-i18n="edit">Modifier</span>
+                                    </button>
+                                    <button id="btnOpenFolder" class="btn btn-secondary btn-sm" onclick="openSelectedClientFolder()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                        <span data-i18n="open_folder">Dossier Client</span>
+                                    </button>
+                                    <button id="btnOpenAllDossiers" class="btn btn-secondary btn-sm" onclick="handleOpenDossiersDir()" title="Ouvrir le répertoire racine de tous les clients">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                        <span data-i18n="all_dossiers">Tous les Dossiers</span>
+                                    </button>
+                                    <button id="btnDeleteClient" class="btn btn-danger btn-sm" onclick="handleDeleteSelectedClient()" disabled>
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                        <span data-i18n="delete_client">Supprimer</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Expandable Client Equipment Tray -->
+                        <div id="clientEquipmentTray" class="client-equipment-tray" style="display: none; margin-top: 14px; border: 1.5px solid var(--color-border); border-radius: 12px; background: #ffffff; overflow: hidden;">
+                            <div class="tray-header flex-between" onclick="toggleClientEquipmentTray()" style="cursor: pointer; padding: 12px 16px; background: #f8fafc; border-bottom: 1px solid var(--color-border);">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span style="font-size: 16px;">📷</span>
+                                    <strong style="font-size: 13px;" data-i18n="client_equipment_title">Équipements Assignés</strong>
+                                    <span id="clientEquipmentCountBadge" class="badge">0</span>
+                                </div>
+                                <span id="clientEquipmentChevron" style="font-size: 11px; color: var(--color-text-muted); transition: transform 0.2s ease;">▼</span>
+                            </div>
+                            <div id="clientEquipmentBody" style="display: none; padding: 12px 16px;">
+                                <div class="table-wrapper" style="max-height: 200px;">
+                                    <table class="data-table" id="clientEquipmentTable">
+                                        <thead>
+                                            <tr>
+                                                <th data-i18n="serial_num">N° de Série</th>
+                                                <th data-i18n="model">Modèle</th>
+                                                <th data-i18n="assignment_date">Date d'Affectation</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr class="empty-row"><td colspan="3" data-i18n="no_equipment_assigned">Aucun équipement assigné</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Client Form (Segmented Tabbed Panel) -->
                     <div class="card client-form-card">
                         <div class="card-header flex-between">
                             <h3 id="clientFormTitle" data-i18n="register_client">Enregistrer Nouveau Client</h3>
-                            <button class="btn btn-secondary btn-sm" onclick="resetClientForm()" data-i18n="clear_form">Nouveau / Vider</button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="resetClientForm()" data-i18n="clear_form">Nouveau / Vider</button>
                         </div>
 
-                        <form id="clientForm" class="client-scroll-form" onsubmit="handleClientSubmit(event)">
+                        <!-- Dossier Completeness Indicator (Annex 5 Regulatory Clearance) -->
+                        <div class="dossier-completeness-card" style="margin-top: 14px; margin-bottom: 14px; padding: 12px 14px; background: #f8fafc; border: 1.5px solid var(--color-border); border-radius: 12px;">
+                            <div class="flex-between" style="margin-bottom: 6px;">
+                                <div style="display: flex; align-items: center; gap: 6px;">
+                                    <span>📋</span>
+                                    <span style="font-size: 12px; font-weight: 800; color: var(--color-text-primary);" data-i18n="dossier_completeness_title">Conformité Dossier Réglementaire (Annexe 5)</span>
+                                </div>
+                                <span id="dossierCompletenessBadge" class="badge badge-warning">0%</span>
+                            </div>
+                            <div style="width: 100%; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden;">
+                                <div id="dossierCompletenessBar" style="width: 0%; height: 100%; background: var(--color-warning); transition: width 0.3s ease, background-color 0.3s ease;"></div>
+                            </div>
+                            <div id="dossierCompletenessHint" style="font-size: 11px; color: var(--color-text-secondary); margin-top: 4px; font-weight: 600;">0/12 champs requis</div>
+                        </div>
+
+                        <!-- Segmented Sub-Tab Switcher -->
+                        <div class="client-subtabs">
+                            <button type="button" class="client-subtab-btn active" id="subtabBtn_identity" onclick="setClientFormTab('identity')">
+                                <span>👤</span> <span data-i18n="tab_identity">Identité</span>
+                            </button>
+                            <button type="button" class="client-subtab-btn" id="subtabBtn_documents" onclick="setClientFormTab('documents')">
+                                <span>🪪</span> <span data-i18n="tab_documents">Documents</span>
+                            </button>
+                            <button type="button" class="client-subtab-btn" id="subtabBtn_corporate" onclick="setClientFormTab('corporate')">
+                                <span>🏢</span> <span data-i18n="tab_corporate">Entreprise</span>
+                            </button>
+                            <button type="button" class="client-subtab-btn" id="subtabBtn_logistics" onclick="setClientFormTab('logistics')">
+                                <span>🚚</span> <span data-i18n="tab_logistics">Logistique</span>
+                            </button>
+                        </div>
+
+                        <form id="clientForm" onsubmit="handleClientSubmit(event)" oninput="updateDossierCompleteness()">
                             <input type="hidden" id="clientIdInput" value="">
 
-                            <!-- Section 1: Identity -->
-                            <div class="form-section">
-                                <h4 class="section-title" data-i18n="identity">Identité</h4>
+                            <!-- Pane 1: Identity -->
+                            <div class="client-subtab-pane active" id="subtabPane_identity">
                                 <div class="form-grid">
                                     <div class="form-group span-2">
                                         <label data-i18n="full_name">Nom Complet: *</label>
-                                        <input type="text" id="cf_full_name" class="form-control" required placeholder="Nom et prénom">
+                                        <input type="text" id="cf_full_name" class="form-control" placeholder="Nom et prénom">
                                     </div>
                                     <div class="form-group">
                                         <label data-i18n="father_name">Nom du Père:</label>
@@ -351,20 +749,24 @@
                                         <label data-i18n="pob">Lieu de Naissance:</label>
                                         <input type="text" id="cf_pob" class="form-control">
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label data-i18n="nationality">Nationalité:</label>
                                         <input type="text" id="cf_nationality" class="form-control" value="جزائرية">
                                     </div>
                                 </div>
+                                <div class="form-stepper-nav justify-end">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('documents')">
+                                        <span data-i18n="step_next">Suivant</span> (🪪 Documents) ➔
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Section 2: Documents -->
-                            <div class="form-section">
-                                <h4 class="section-title" data-i18n="documents">Documents d'Identité</h4>
+                            <!-- Pane 2: Documents -->
+                            <div class="client-subtab-pane" id="subtabPane_documents">
                                 <div class="form-grid">
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label data-i18n="doc_num">N° Carte d'Identité: *</label>
-                                        <input type="text" id="cf_doc_number" class="form-control" required>
+                                        <input type="text" id="cf_doc_number" class="form-control">
                                     </div>
                                     <div class="form-group">
                                         <label data-i18n="doc_issuer">Délivré par:</label>
@@ -374,7 +776,7 @@
                                         <label data-i18n="doc_date">Date de délivrance:</label>
                                         <input type="text" id="cf_doc_issue_date" class="form-control" placeholder="JJ/MM/AAAA">
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group span-2">
                                         <label data-i18n="passport_num">N° Passeport (optionnel):</label>
                                         <input type="text" id="cf_passport_number" class="form-control">
                                     </div>
@@ -387,11 +789,18 @@
                                         <input type="text" id="cf_passport_expiry_date" class="form-control" placeholder="JJ/MM/AAAA">
                                     </div>
                                 </div>
+                                <div class="form-stepper-nav">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('identity')">
+                                        ⬅ <span data-i18n="step_prev">Précédent</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('corporate')">
+                                        <span data-i18n="step_next">Suivant</span> (🏢 Entreprise) ➔
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Section 3: Corporate & Contact -->
-                            <div class="form-section">
-                                <h4 class="section-title" data-i18n="corporate">Entreprise & Contact</h4>
+                            <!-- Pane 3: Corporate & Contact -->
+                            <div class="client-subtab-pane" id="subtabPane_corporate">
                                 <div class="form-grid">
                                     <div class="form-group span-2">
                                         <label data-i18n="company_name">Nom de l'Entreprise:</label>
@@ -434,11 +843,18 @@
                                         <input type="text" id="cf_shareholders" class="form-control" placeholder="Séparés par une virgule">
                                     </div>
                                 </div>
+                                <div class="form-stepper-nav">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('documents')">
+                                        ⬅ <span data-i18n="step_prev">Précédent</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('logistics')">
+                                        <span data-i18n="step_next">Suivant</span> (🚚 Logistique) ➔
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Section 4: Logistics (Annex 1) -->
-                            <div class="form-section">
-                                <h4 class="section-title" data-i18n="logistics">Logistique (Annexe 1)</h4>
+                            <!-- Pane 4: Logistics (Annex 1) -->
+                            <div class="client-subtab-pane" id="subtabPane_logistics">
                                 <div class="form-grid">
                                     <div class="form-group">
                                         <label data-i18n="acc_ref">Réf. Accréditation:</label>
@@ -465,139 +881,82 @@
                                         <input type="text" id="cf_security_conditions" class="form-control" value="حراسة ونظام إنذار ومراقبة 24/24">
                                     </div>
                                 </div>
+                                <div class="form-stepper-nav">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="setClientFormTab('corporate')">
+                                        ⬅ <span data-i18n="step_prev">Précédent</span>
+                                    </button>
+                                </div>
                             </div>
 
-                            <button type="submit" id="btnSaveClient" class="btn btn-primary btn-block" data-i18n="save_client">Enregistrer le Client</button>
+                            <!-- Pinned Submit Button -->
+                            <div class="client-form-submit-row">
+                                <button type="submit" id="btnSaveClient" class="btn btn-primary btn-block" data-i18n="save_client">
+                                    💾 Enregistrer le Client
+                                </button>
+                            </div>
                         </form>
-                    </div>
-
-                    <!-- Client Directory & Actions -->
-                    <div class="card client-directory-card">
-                        <!-- Modular Multi-Dossier Status Bar (R4) -->
-                        <div class="dossier-selector-bar">
-                            <div class="dossier-pill active" id="pillDossier1" onclick="selectDossierMode(1)">
-                                <span class="dossier-badge active-badge">1er Dossier</span>
-                                <strong data-i18n="dossier_1_title">Autorisation d'Acquisition</strong>
-                                <span class="dossier-sub" data-i18n="dossier_1_sub">Annexes 1 & 5 + PV de Pose</span>
-                            </div>
-                            <div class="dossier-pill" id="pillDossier2" onclick="selectDossierMode(2)">
-                                <span class="dossier-badge active-badge" id="badgeDossier2" data-i18n="dossier_2_badge_active">2ème Dossier</span>
-                                <strong data-i18n="dossier_2_title">2ème Dossier (Exploitation)</strong>
-                                <span class="dossier-sub" data-i18n="dossier_2_sub">Annexe 3 (Tableau Étendu) & Annexe 8</span>
-                            </div>
-                        </div>
-
-                        <div class="card-header flex-between">
-                            <div class="search-box">
-                                <input type="text" id="clientSearchInput" class="form-control" placeholder="Rechercher par nom, ID, ou téléphone..." oninput="loadClientsTable()">
-                            </div>
-                            <span id="clientsCountBadge" class="badge">0 clients</span>
-                        </div>
-
-                        <div class="table-wrapper directory-wrapper">
-                            <table class="data-table" id="clientsTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">ID</th>
-                                        <th data-i18n="full_name">Nom / Entreprise</th>
-                                        <th data-i18n="phone">Téléphone</th>
-                                        <th data-i18n="doc_num">N° Document</th>
-                                        <th data-i18n="cameras">Caméras</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Populated via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <div class="client-actions-bar">
-                            <button id="btnEditClient" class="btn btn-secondary" onclick="editSelectedClient()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                <span data-i18n="edit">Modifier</span>
-                            </button>
-
-                            <button id="btnAssignCam" class="btn btn-secondary" onclick="openAssignModal()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="16"></line><line x1="8" y1="12" x2="16" y2="12"></line></svg>
-                                <span data-i18n="assign_camera">Assigner Caméra</span>
-                            </button>
-
-                            <button id="btnReturnCam" class="btn btn-secondary" onclick="openReturnModal()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
-                                <span data-i18n="return_camera">Retour Caméra</span>
-                            </button>
-
-                            <button id="btnOpenFolder" class="btn btn-secondary" onclick="openSelectedClientFolder()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                                <span data-i18n="open_folder">Dossier Client</span>
-                            </button>
-
-                            <button id="btnOpenAllDossiers" class="btn btn-secondary" onclick="handleOpenDossiersDir()" title="Ouvrir le répertoire racine de tous les clients">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                                <span data-i18n="all_dossiers">Tous les Dossiers</span>
-                            </button>
-
-                            <button id="btnPreviewDossier" class="btn btn-secondary" onclick="openSelectedClientPreview()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="3"></circle></svg>
-                                <span data-i18n="preview_docs">Aperçu</span>
-                            </button>
-
-                            <button id="btnGenerateDossier" class="btn btn-accent" onclick="generateDossierForSelectedClient()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-                                <span data-i18n="first_dossier">1er Dossier (PDF)</span>
-                            </button>
-
-                            <button id="btnGenerateSecondDossier" class="btn btn-primary" onclick="generateSecondDossierForSelectedClient()" disabled>
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
-                                <span data-i18n="second_dossier">2ème Dossier (PDF)</span>
-                            </button>
-                        </div>
                     </div>
                 </div>
             </section>
 
-            <!-- TAB 3: SETTINGS & CATALOG -->
+            <!-- TAB 3: SETTINGS -->
             <section id="tab-settings" class="tab-pane">
                 <header class="pane-header">
-                    <h1 data-i18n="nav_settings">Paramètres & Catalogue</h1>
-                    <p class="subtitle" data-i18n="settings_sub">Configurez les modèles de caméras et gérez la base de données.</p>
+                    <h1 data-i18n="nav_settings">Paramètres du Système</h1>
+                    <p class="subtitle" data-i18n="settings_sub">Configurez les dossiers, les sauvegardes, le profil d'agrément et la maintenance.</p>
                 </header>
 
                 <div class="settings-grid">
-                    <!-- Add Model Card -->
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 data-i18n="add_model">Ajouter un Modèle au Catalogue</h3>
-                        </div>
-                        <form id="addModelForm" onsubmit="handleAddModel(event)">
-                            <div class="form-grid">
-                                <div class="form-group span-2">
-                                    <label data-i18n="int_model_name">Marque & Modèle (interne)</label>
-                                    <input type="text" id="m_name" class="form-control" required placeholder="ex: Hikvision DS-2CD2143G2-I">
-                                </div>
-                                <div class="form-group">
-                                    <label data-i18n="equip_desig">Désignation (Annexe 1)</label>
-                                    <input type="text" id="m_desig" class="form-control" placeholder="ex: كاميرا مراقبة خارجية">
-                                </div>
-                                <div class="form-group">
-                                    <label data-i18n="equip_nature">Nature (Annexe 1)</label>
-                                    <input type="text" id="m_nature" class="form-control" placeholder="ex: IP Dome 4MP">
-                                </div>
-                                <div class="form-group">
-                                    <label data-i18n="category">Section (القسم)</label>
-                                    <input type="text" id="m_cat" class="form-control" placeholder="ex: القسم أ">
-                                </div>
-                                <div class="form-group">
-                                    <label data-i18n="sub_category">Sous-section (الفرع)</label>
-                                    <input type="text" id="m_subcat" class="form-control" placeholder="ex: الفرع 1">
-                                </div>
-                                <div class="form-group">
-                                    <label data-i18n="min_stock_threshold">Seuil Alerte Stock Bas</label>
-                                    <input type="number" id="m_threshold" class="form-control" min="0" max="999" value="5" placeholder="5">
+                    <!-- Catalog Navigation Shortcut Banner -->
+                    <div class="card span-2 settings-shortcut-card" style="padding: 16px 20px;">
+                        <div class="flex-between flex-wrap gap-12">
+                            <div class="flex-align-center gap-12">
+                                <span style="font-size: 26px; line-height: 1;">🏷️</span>
+                                <div>
+                                    <strong style="font-size: 13.5px; color: var(--color-text-primary);" data-i18n="catalog_moved_title">Gestion du Catalogue & Modèles de Caméras</strong>
+                                    <p class="text-muted" style="margin: 2px 0 0 0; font-size: 12px;" data-i18n="catalog_moved_desc">Les modèles de caméras, leurs désignations réglementaires et leurs seuils d'alerte sont désormais centralisés dans l'onglet Inventaire.</p>
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-primary" style="margin-top: 15px;" data-i18n="save_model">Enregistrer le Modèle</button>
-                        </form>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="navigateToTab('inventory'); switchInventorySubtab('models');">
+                                <span data-i18n="go_to_models_btn">Accéder aux Modèles →</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Software License Card -->
+                    <div class="card" id="cardLicenseSettings">
+                        <div class="card-header flex-between">
+                            <div class="flex-align-center gap-10">
+                                <span style="font-size: 1.3rem;">🔐</span>
+                                <h3 data-i18n="settings_license_title">Licence Logicielle</h3>
+                            </div>
+                            <span id="licenseStatusBadge" class="badge badge-success">Actif</span>
+                        </div>
+                        <p class="text-muted" data-i18n="settings_license_desc">Informations sur l'activation et la validité de la licence sur ce poste de travail.</p>
+                        
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group span-2">
+                                <label data-i18n="lic_machine_id">Identifiant Unique Machine</label>
+                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                    <input type="text" id="licSettingsMachineId" class="form-control" readonly style="font-family: var(--font-mono); font-weight: 700; background: #f8fafc; letter-spacing: 1px;">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="copyMachineId(this)" data-i18n="btn_copy">Copier</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lic_expiry_label">Date d'expiration</label>
+                                <input type="text" id="licSettingsExpiry" class="form-control" readonly style="font-weight: 600; background: #f8fafc;">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="lic_days_left_label">Jours Restants</label>
+                                <input type="text" id="licSettingsDaysLeft" class="form-control" readonly style="font-weight: 600; background: #f8fafc;">
+                            </div>
+                        </div>
+
+                        <div style="margin-top: 14px; display: flex; gap: 10px;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="openLicenseModal()">
+                                <span>🔑</span> <span data-i18n="btn_renew_license">Renouveler / Changer la Clé</span>
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Dossier Storage Location Card -->
@@ -625,16 +984,117 @@
                             <div style="margin-top: 6px; padding-left: 8px;">
                                 📁 &lt;Dossier Racine Sélectionné&gt;/<br>
                                 &nbsp;&nbsp;└── 📁 &lt;Nom Complet du Client&gt;/<br>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📁 <strong>1er dossier</strong>/ <span style="color: #059669; font-weight: 700;">(annex1.pdf, annex5.pdf, pv_reception.pdf)</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;├── 📁 <strong>1er dossier</strong>/ <span style="color: #059669; font-weight: 700;">(annex1.pdf, annex5.pdf, agreement.pdf, pv_reception.pdf)</span><br>
                                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;└── 📁 <strong>2eme dossier</strong>/ <span style="color: #d97706; font-weight: 700;">(Phase 2 - Exploitation)</span>
                             </div>
                         </div>
                     </div>
 
+                    <!-- Database Backup & Restore Card -->
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <h3 data-i18n="backup_restore_title">💾 Sauvegarde & Restauration</h3>
+                            <span id="lastBackupBadge" class="badge badge-info" style="font-size: 0.78rem;">Dernière : Jamais</span>
+                        </div>
+                        <p class="text-muted" data-i18n="backup_restore_desc">Créez des instantanés fiables de la base de données SQLite, exportez vers un support externe ou restaurez un fichier.</p>
+                        
+                        <div style="margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;">
+                            <button type="button" class="btn btn-primary btn-sm" onclick="handleCreateBackup()">
+                                <span>💾</span> <span data-i18n="btn_create_backup">Créer Sauvegarde</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="handleExportBackup()">
+                                <span>↗️</span> <span data-i18n="btn_export_backup">Exporter vers...</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="handleRestoreBackup()">
+                                <span>📥</span> <span data-i18n="btn_restore_backup">Restaurer...</span>
+                            </button>
+                            <button type="button" class="btn btn-secondary btn-sm" onclick="handleOpenBackupsDir()">
+                                <span>📁</span> <span data-i18n="btn_open_backups">Dossier</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Installer Digital Seal & Signature Profile Card -->
+                    <div class="card">
+                        <div class="card-header flex-between">
+                            <h3 data-i18n="installer_seal_title">🔏 Cachet & Signature de l'Installateur</h3>
+                            <label class="switch-toggle" style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                <input type="checkbox" id="inst_seal_enabled" onchange="handleToggleInstallerSeal(event)">
+                                <span style="font-size: 0.8rem; font-weight: 700;" data-i18n="enable_seal_stamping">Tampon Automatique</span>
+                            </label>
+                        </div>
+                        <p class="text-muted" data-i18n="installer_seal_desc">Apposez automatiquement le cachet officiel et la signature de votre entreprise sur tous les documents PDF générés.</p>
+                        
+                        <div class="form-grid" style="margin-top: 14px;">
+                            <div class="form-group span-2">
+                                <label data-i18n="installer_company_name">Nom de l'Entreprise d'Installation</label>
+                                <input type="text" id="inst_company_name" class="form-control form-control-sm" placeholder="ex: EURL SMART CCTV ALGERIE">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_name">Nom du Responsable / Installateur</label>
+                                <input type="text" id="inst_installer_name" class="form-control form-control-sm" placeholder="ex: Amine Benali">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_phone">Téléphone de Contact</label>
+                                <input type="text" id="inst_phone" class="form-control form-control-sm" placeholder="ex: 0550 12 34 56">
+                            </div>
+                            <div class="form-group span-2">
+                                <label data-i18n="installer_city">Ville / Wilaya de Signature</label>
+                                <input type="text" id="inst_city" class="form-control form-control-sm" placeholder="ex: الجزائر ou البليدة">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_accreditation_ref">Réf. / N° d'Agrément</label>
+                                <input type="text" id="inst_accreditation_ref" class="form-control form-control-sm" placeholder="ex: 269 / م.ع.ع.ش.ق / 2025">
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_accreditation_date">Date de l'Agrément</label>
+                                <input type="text" id="inst_accreditation_date" class="form-control form-control-sm" placeholder="ex: 29/04/2025">
+                            </div>
+                            <div class="form-group span-2">
+                                <label data-i18n="installer_agreement_doc">Document Officiel d'Agrément (PDF ou Image, 1 ou 2 pages)</label>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                    <span id="agreementDocBadge" class="badge badge-warning" style="font-size: 0.8rem; padding: 6px 12px;" data-i18n="agreement_doc_badge_none">Aucun document chargé</span>
+                                    <input type="file" id="agreementFileInput" accept="application/pdf,image/*" style="display: none;" onchange="handleAgreementFileChosen(event)">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('agreementFileInput').click()" data-i18n="btn_choose">Choisir Document...</button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="clearAgreementDoc()" title="Supprimer la sélection">✕</button>
+                                </div>
+                                <span class="text-muted" style="font-size: 0.76rem; display: block; margin-top: 4px;" data-i18n="installer_agreement_hint">Chargez votre agrément officiel (1 ou 2 pages). La mention réglementaire « تسلم نسخة واحدة إلى السيد... » et le cachet seront apposés au bas de chaque page en conservant le format A4.</span>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_seal_image">Cachet Officiel (PNG/JPG)</label>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                    <div id="sealThumbWrap" style="width: 52px; height: 52px; border: 1.5px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden;">
+                                        <img id="sealThumbImg" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                                        <span id="sealThumbEmpty" style="font-size: 1.2rem; color: #94a3b8;">⭕</span>
+                                    </div>
+                                    <input type="file" id="sealFileInput" accept="image/*" style="display: none;" onchange="handleSealFileChosen(event)">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sealFileInput').click()" data-i18n="btn_choose">Choisir</button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="clearSealImage()" title="Supprimer">✕</button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label data-i18n="installer_signature_image">Signature Numérique (PNG/JPG)</label>
+                                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                    <div id="sigThumbWrap" style="width: 52px; height: 52px; border: 1.5px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden;">
+                                        <img id="sigThumbImg" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                                        <span id="sigThumbEmpty" style="font-size: 1.2rem; color: #94a3b8;">✍️</span>
+                                    </div>
+                                    <input type="file" id="sigFileInput" accept="image/*" style="display: none;" onchange="handleSigFileChosen(event)">
+                                    <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('sigFileInput').click()" data-i18n="btn_choose">Choisir</button>
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="clearSigImage()" title="Supprimer">✕</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-primary btn-sm" style="margin-top: 14px;" onclick="handleSaveInstallerProfile()" data-i18n="btn_save_installer">
+                            💾 Enregistrer le Profil Installateur
+                        </button>
+                    </div>
+
                     <!-- Database Maintenance Card -->
                     <div class="card">
                         <div class="card-header">
-                            <h3 data-i18n="maintenance">Maintenance du Système</h3>
+                            <h3 data-i18n="maintenance">Maintenance & Données de Démo</h3>
                         </div>
                         <p class="text-muted" data-i18n="maint_desc">Gérez les données système, injectez des données de démonstration ou réinitialisez la base.</p>
                         <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
@@ -642,54 +1102,107 @@
                             <button class="btn btn-danger" onclick="confirmClearDb()" data-i18n="clear_db">Vider la Base de Données</button>
                         </div>
                     </div>
-
-                    <!-- Catalog Table Card -->
-                    <div class="card span-2">
-                        <div class="card-header flex-between">
-                            <h3 data-i18n="registered_models">Modèles Enregistrés</h3>
-                            <span id="modelsCountBadge" class="badge">0 modèles</span>
-                        </div>
-                        <div class="table-wrapper">
-                            <table class="data-table" id="modelsTable">
-                                <thead>
-                                    <tr>
-                                        <th style="width: 50px;">ID</th>
-                                        <th data-i18n="int_model_name">Modèle</th>
-                                        <th data-i18n="equip_desig">Désignation</th>
-                                        <th data-i18n="equip_nature">Nature</th>
-                                        <th data-i18n="category">Section</th>
-                                        <th data-i18n="sub_category">Sous-section</th>
-                                        <th data-i18n="stock">En Stock</th>
-                                        <th data-i18n="threshold">Seuil</th>
-                                        <th style="width: 80px;" data-i18n="actions">Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Populated via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
             </section>
         </main>
     </div>
 
+    <!-- MODAL: QUICK ADD CAMERA MODEL FROM INVENTORY -->
+    <div id="quickAddModelModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header flex-between">
+                <h3 data-i18n="add_model_quick_title">➕ Ajouter un Modèle au Catalogue</h3>
+                <button type="button" class="btn-close" onclick="closeModal('quickAddModelModal')">&times;</button>
+            </div>
+            <form id="quickAddModelForm" onsubmit="handleQuickAddModelSubmit(event)">
+                <div class="modal-body">
+                    <div class="form-grid">
+                        <div class="form-group span-2">
+                            <label data-i18n="int_model_name">Marque & Modèle (interne) *</label>
+                            <input type="text" id="qm_name" class="form-control" required placeholder="ex: Hikvision DS-2CD2143G2-I">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="equip_desig">Désignation (Annexe 1)</label>
+                            <input type="text" id="qm_desig" class="form-control" placeholder="ex: كاميرا مراقبة خارجية">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="equip_nature">Nature (Annexe 1)</label>
+                            <input type="text" id="qm_nature" class="form-control" placeholder="ex: IP Dome 4MP">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="category">Section (القسم)</label>
+                            <input type="text" id="qm_cat" class="form-control" value="القسم أ" placeholder="ex: القسم أ">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="sub_category">Sous-section (الفرع)</label>
+                            <input type="text" id="qm_subcat" class="form-control" value="الفرع 1" placeholder="ex: الفرع 1">
+                        </div>
+                        <div class="form-group span-2">
+                            <label data-i18n="min_stock_threshold">Seuil Alerte Stock Bas</label>
+                            <input type="number" id="qm_threshold" class="form-control" min="0" max="999" value="5">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('quickAddModelModal')" data-i18n="cancel">Annuler</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="save_model">Enregistrer le Modèle</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 1: ASSIGN CAMERAS -->
     <div id="assignModal" class="modal-backdrop">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-header">
                 <h3 data-i18n="assign_camera">Assigner des Caméras au Client</h3>
                 <button class="btn-close" onclick="closeModal('assignModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <p id="assignClientInfo" class="modal-subtitle">Client: </p>
+                <p id="assignClientInfo" class="modal-subtitle" style="font-weight: 700; color: #0f172a; margin-bottom: 12px;">Client: </p>
+                
+                <!-- Superpower 1: Scan-to-Client Barcode Dock -->
+                <div class="assign-scan-box" style="margin-bottom: 16px; padding: 14px 16px; background: #f8fafc; border: 1.5px solid var(--color-accent-border); border-radius: 14px;">
+                    <label style="font-size: 12.5px; font-weight: 800; color: var(--color-accent-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 8px;">
+                        <span>⚡</span> <span data-i18n="scan_to_assign_label">Scanner Directement une Caméra (Lecteur Code-barres) :</span>
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="assignBarcodeScannerInput" class="form-control" placeholder="Scanner le code-barres de la caméra ici et Entrée..." autocomplete="off" style="font-family: var(--font-mono); font-weight: 700;">
+                        <button type="button" class="btn btn-primary" onclick="handleScanToClientSubmit()">
+                            <span>⚡</span> <span data-i18n="assign_btn">Assigner</span>
+                        </button>
+                    </div>
+                    <div id="assignScanFeedback" style="display:none; margin-top: 8px; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 8px;"></div>
+                </div>
+
+                <div style="text-align: center; margin: 12px 0; color: #94a3b8; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">
+                    — <span data-i18n="or_model_selection">Ou sélection / tirage par modèle</span> —
+                </div>
+
+                <!-- Superpower 2: Model Filter & Quick Auto-Pick by Quantity -->
                 <div class="form-group">
-                    <label data-i18n="select_model">Modèle de caméra</label>
+                    <label data-i18n="select_model">Modèle de caméra :</label>
                     <select id="assignModelSelect" class="form-control" onchange="loadAvailableSerialsForAssign()">
                         <!-- Models populated via JS -->
                     </select>
                 </div>
+
+                <div class="assign-qty-dock" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; margin-bottom: 12px; background: #ffffff; padding: 10px 14px; border: 1.5px dashed var(--color-border); border-radius: 12px; flex-wrap: wrap;">
+                    <div class="flex-align-center gap-8">
+                        <label style="font-size: 12.5px; font-weight: 700; color: var(--color-text-secondary);" data-i18n="quick_qty_label">Prendre au hasard :</label>
+                        <input type="number" id="assignQtyInput" class="form-control form-control-sm" style="width: 70px; text-align: center; font-weight: 800; font-family: var(--font-mono);" min="1" max="99" value="1">
+                        <span style="font-size: 12px; color: var(--color-text-muted);" data-i18n="units_label">unités</span>
+                    </div>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="handleAutoPickCheckboxes()" title="Cocher automatiquement N numéros de ce modèle">
+                            <span>🎲</span> <span data-i18n="btn_auto_pick">Cocher N</span>
+                        </button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="handleDirectAssignNByModel()" title="Assigner immédiatement N numéros au client en 1 clic">
+                            <span>⚡</span> <span data-i18n="btn_auto_assign">Assigner N Direct</span>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="flex-between" style="margin: 10px 0;">
                     <span id="availableSerialsCount" class="badge">0 disponible(s)</span>
                     <div class="btn-group">
@@ -697,11 +1210,11 @@
                         <button class="btn btn-secondary btn-sm" onclick="toggleAllAssignCheckboxes(false)" data-i18n="clear_all">Tout Décocher</button>
                     </div>
                 </div>
-                <div class="table-wrapper" style="max-height: 260px;">
+                <div class="table-wrapper" style="max-height: 240px;">
                     <table class="data-table" id="assignSerialsTable">
                         <thead>
                             <tr>
-                                <th style="width: 40px;"></th>
+                                <th style="width: 44px; text-align: center;"></th>
                                 <th data-i18n="serial_num">N° de Série</th>
                             </tr>
                         </thead>
@@ -725,6 +1238,26 @@
             </div>
             <div class="modal-body">
                 <p id="returnClientInfo" class="modal-subtitle">Client: </p>
+                
+                <!-- Scan to Return Dock -->
+                <div class="return-scan-box" style="margin-bottom: 14px; padding: 12px 14px; background: #f8fafc; border: 1.5px solid var(--color-accent-border); border-radius: 12px;">
+                    <label style="font-size: 12px; font-weight: 800; color: var(--color-accent-primary); display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                        <span>⚡</span> <span data-i18n="scan_to_return_label">Scanner une Caméra à Retourner :</span>
+                    </label>
+                    <div style="display: flex; gap: 8px;">
+                        <input type="text" id="returnBarcodeScannerInput" class="form-control" placeholder="Scanner le numéro de série et Entrée..." autocomplete="off" style="font-family: var(--font-mono); font-weight: 700;">
+                        <button type="button" class="btn btn-secondary" onclick="handleScanToReturnSubmit()">
+                            <span>⚡</span> <span data-i18n="btn_check">Cocher</span>
+                        </button>
+                    </div>
+                    <div id="returnScanFeedback" style="display:none; margin-top: 8px; font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 8px;"></div>
+                </div>
+
+                <!-- Text Search Filter in Return Modal -->
+                <div class="form-group" style="margin-bottom: 10px;">
+                    <input type="text" id="returnFilterInput" class="form-control form-control-sm" placeholder="🔍 Filtrer les numéros ou modèles..." oninput="filterReturnSerialsTable()">
+                </div>
+
                 <div class="flex-between" style="margin: 10px 0;">
                     <span id="assignedSerialsCount" class="badge">0 assignée(s)</span>
                     <div class="btn-group">
@@ -749,6 +1282,51 @@
                 <button class="btn btn-secondary" onclick="closeModal('returnModal')" data-i18n="cancel">Annuler</button>
                 <button class="btn btn-primary" onclick="submitReturnCameras()" data-i18n="confirm_return">Confirmer le Retour</button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT CAMERA MODEL -->
+    <div id="editModelModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <h3 data-i18n="edit_model_title">Modifier le Modèle de Caméra</h3>
+                <button class="btn-close" onclick="closeModal('editModelModal')">&times;</button>
+            </div>
+            <form id="editModelForm" onsubmit="handleEditModelSubmit(event)">
+                <div class="modal-body">
+                    <input type="hidden" id="em_id">
+                    <div class="form-group">
+                        <label data-i18n="model_name">Nom Commercial / Référence: *</label>
+                        <input type="text" id="em_name" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="model_designation">Désignation Réglementaire (Arabe):</label>
+                        <input type="text" id="em_desig" class="form-control" placeholder="كاميرا مراقبة بصرية">
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="model_nature">Nature Technique:</label>
+                        <input type="text" id="em_nature" class="form-control" placeholder="بصرية رقمية">
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label data-i18n="model_category">Section Réglementaire (القسم):</label>
+                            <input type="text" id="em_cat" class="form-control" placeholder="الأول">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="model_subcategory">Sous-Section (الفرع):</label>
+                            <input type="text" id="em_subcat" class="form-control" placeholder="الأول">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label data-i18n="stock_threshold_label">Seuil Minimal d'Alerte Stock:</label>
+                        <input type="number" id="em_threshold" class="form-control" min="0" max="999" value="5">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal('editModelModal')" data-i18n="cancel">Annuler</button>
+                    <button type="submit" class="btn btn-primary" data-i18n="save_changes">Enregistrer les Modifications</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -805,9 +1383,10 @@
                 <div class="pdf-doc-tabs">
                     <button class="pdf-tab active" data-doctype="annex1" onclick="switchPreviewDocType('annex1')">Annexe 1</button>
                     <button class="pdf-tab" data-doctype="annex5" onclick="switchPreviewDocType('annex5')">Annexe 5</button>
+                    <button class="pdf-tab" data-doctype="agreement" onclick="switchPreviewDocType('agreement')" data-i18n="doc_agreement">Agrément</button>
+                    <button class="pdf-tab" data-doctype="pv_pose" onclick="switchPreviewDocType('pv_pose')">PV de Pose</button>
                     <button class="pdf-tab" data-doctype="annex3" onclick="switchPreviewDocType('annex3')">Annexe 3</button>
                     <button class="pdf-tab" data-doctype="annex8" onclick="switchPreviewDocType('annex8')">Annexe 8</button>
-                    <button class="pdf-tab" data-doctype="pv_pose" onclick="switchPreviewDocType('pv_pose')">PV de Pose</button>
                 </div>
                 <div class="pdf-pagination-controls">
                     <button class="btn btn-secondary btn-sm" onclick="prevPreviewPage()" id="btnPrevPage">◀</button>
@@ -845,58 +1424,340 @@
         </div>
     </div>
 
-    <!-- MODAL 5: BULK CSV / TXT IMPORT (R2) -->
-    <div id="csvImportModal" class="modal-backdrop">
+    <!-- MODAL 5: UNIFIED INTELLIGENT IMPORT (EXCEL / CSV / TXT) -->
+    <div id="unifiedImportModal" class="modal-backdrop">
         <div class="modal-dialog modal-lg">
             <div class="modal-header flex-between">
-                <h3 data-i18n="csv_import_title">Importation Massive de Numéros de Série (CSV / TXT)</h3>
-                <button class="btn-close" onclick="closeModal('csvImportModal')">&times;</button>
+                <div class="flex-align-center gap-10">
+                    <h3 data-i18n="unified_import_title">Importation Intelligente (Excel / CSV)</h3>
+                    <div style="display: flex; gap: 4px;">
+                        <span class="badge" style="background:#0284c7; color:#fff;">.XLSX</span>
+                        <span class="badge" style="background:#0284c7; color:#fff;">.XLS</span>
+                        <span class="badge" style="background:#475569; color:#fff;">.CSV</span>
+                        <span class="badge" style="background:#475569; color:#fff;">.TXT</span>
+                    </div>
+                </div>
+                <button class="btn-close" onclick="closeModal('unifiedImportModal')">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="form-group" style="margin-bottom: 14px;">
+                <!-- Template Download Bar -->
+                <div class="template-download-bar">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #334155;" data-i18n="templates_hint">Modèles types à télécharger :</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="downloadImportTemplate('catalog')">
+                            <span>📥</span> <span data-i18n="tpl_catalog">Modèle Catalogue (.xlsx)</span>
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="downloadImportTemplate('manifest')">
+                            <span>📥</span> <span data-i18n="tpl_manifest">Modèle Manifeste (.xlsx)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Mode Detection Banner -->
+                <div id="importModeBanner" class="import-mode-banner" style="display: none;">
+                    <div class="flex-align-center gap-8">
+                        <span id="importModeIcon">⚡</span>
+                        <span id="importModeText">Mode détecté</span>
+                    </div>
+                    <span id="importModeSubBadge" class="badge"></span>
+                </div>
+
+                <!-- Destination Model (shown if mode is SERIALS_ONLY) -->
+                <div id="importDestinationModelGroup" class="form-group" style="margin-bottom: 14px;">
                     <label data-i18n="select_model">Modèle de Caméra de Destination *</label>
-                    <select id="csvImportModelSelect" class="form-control">
+                    <select id="unifiedImportModelSelect" class="form-control">
                         <!-- Populated via JS -->
                     </select>
                 </div>
 
                 <!-- Interactive Dropzone -->
-                <div id="csvDropzone" class="csv-dropzone" onclick="document.getElementById('csvFileInput').click()">
-                    <input type="file" id="csvFileInput" accept=".csv,.txt" style="display: none;" onchange="handleCsvFileSelected(event)">
+                <div id="unifiedDropzone" class="csv-dropzone" onclick="document.getElementById('unifiedFileInput').click()">
+                    <input type="file" id="unifiedFileInput" accept=".xlsx,.xls,.csv,.tsv,.txt" style="display: none;" onchange="handleUnifiedFileSelected(event)">
                     <div class="dropzone-content">
-                        <div class="dropzone-icon">📁</div>
-                        <h4 data-i18n="dropzone_prompt">Glissez-déposez votre fichier CSV ici ou cliquez pour parcourir</h4>
-                        <p class="text-muted" data-i18n="dropzone_sub">Détection automatique du séparateur (virgule, point-virgule, tabulation) et des en-têtes.</p>
+                        <div class="dropzone-icon">📊</div>
+                        <h4 id="unifiedDropzonePrompt" data-i18n="unified_dropzone_prompt">Glissez-déposez votre fichier Excel ou CSV ici</h4>
+                        <p class="text-muted" data-i18n="unified_dropzone_sub">Détection automatique : Catalogue Modèles, Manifeste de Livraison (Modèle + N° Série) ou Numéros de Série.</p>
                     </div>
                 </div>
 
                 <!-- Analysis Summary Stats -->
-                <div id="csvAnalysisSummary" class="csv-analysis-summary" style="display: none; margin-top: 15px;">
-                    <div class="analysis-stat"><span class="label" data-i18n="total_detected">Total détecté:</span> <strong id="csvStatTotal">0</strong></div>
-                    <div class="analysis-stat text-success"><span class="label" data-i18n="valid_new">Valides & Nouveaux:</span> <strong id="csvStatValid">0</strong></div>
-                    <div class="analysis-stat text-warning"><span class="label" data-i18n="dup_in_file">Doublons dans fichier:</span> <strong id="csvStatDupFile">0</strong></div>
-                    <div class="analysis-stat text-danger"><span class="label" data-i18n="already_in_db">Déjà en base:</span> <strong id="csvStatInDb">0</strong></div>
+                <div id="unifiedAnalysisSummary" class="csv-analysis-summary" style="display: none; margin-top: 15px;">
+                    <div class="analysis-stat"><span class="label" data-i18n="total_detected">Total détecté:</span> <strong id="importStatTotal">0</strong></div>
+                    <div class="analysis-stat text-success"><span class="label" data-i18n="valid_new">Valides & Prêts:</span> <strong id="importStatValid">0</strong></div>
+                    <div class="analysis-stat" id="importStatNewModelsGroup" style="display: none; color: #6d28d9;"><span class="label" data-i18n="new_models_found">Nouveaux modèles:</span> <strong id="importStatNewModels">0</strong></div>
+                    <div class="analysis-stat text-warning"><span class="label" data-i18n="dup_in_file">Doublons fichier:</span> <strong id="importStatDupFile">0</strong></div>
+                    <div class="analysis-stat text-danger"><span class="label" data-i18n="already_in_db">Déjà en base:</span> <strong id="importStatInDb">0</strong></div>
                 </div>
 
                 <!-- Preview Table -->
-                <div id="csvPreviewTableWrapper" class="table-wrapper" style="display: none; max-height: 200px; margin-top: 15px;">
-                    <table class="data-table" id="csvPreviewTable">
-                        <thead>
-                            <tr>
-                                <th style="width: 50px;">#</th>
-                                <th data-i18n="serial_num">N° de Série</th>
-                                <th data-i18n="status">État</th>
-                            </tr>
+                <div id="unifiedPreviewTableWrapper" class="table-wrapper" style="display: none; max-height: 230px; margin-top: 15px;">
+                    <table class="data-table" id="unifiedPreviewTable">
+                        <thead id="unifiedPreviewTableHead">
+                            <!-- Populated dynamically via JS -->
                         </thead>
                         <tbody></tbody>
                     </table>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" onclick="closeModal('csvImportModal')" data-i18n="cancel">Annuler</button>
-                <button class="btn btn-primary" id="btnConfirmCsvImport" onclick="submitCsvImport()" disabled data-i18n="confirm_import">
+                <button class="btn btn-secondary" onclick="closeModal('unifiedImportModal')" data-i18n="cancel">Annuler</button>
+                <button class="btn btn-primary" id="btnConfirmUnifiedImport" onclick="submitUnifiedImport()" disabled data-i18n="confirm_import">
                     Confirmer l'Importation
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Standalone License Modal -->
+    <div id="licenseModal" class="modal-backdrop">
+        <div class="modal-dialog">
+            <div class="modal-header flex-between">
+                <div class="flex-align-center gap-10">
+                    <span style="font-size: 1.3rem;">🔐</span>
+                    <h3 data-i18n="lic_modal_title">Activation de la Licence</h3>
+                </div>
+                <button type="button" class="btn-close" id="btnCloseLicenseModal" onclick="closeModal('licenseModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Status banner -->
+                <div id="licModalBanner" class="alert-box alert-success" style="margin-bottom: 16px;">
+                    <div class="alert-icon" id="licModalBannerIcon">✓</div>
+                    <div class="alert-content">
+                        <strong id="licModalBannerTitle">Licence Valide</strong>
+                        <p id="licModalBannerDesc" style="margin: 0; font-size: 0.82rem;">Votre licence est active.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label data-i18n="lic_machine_id">Identifiant Unique Machine (à fournir au développeur)</label>
+                    <div style="display: flex; gap: 8px; margin-top: 4px;">
+                        <input type="text" id="licModalMachineId" class="form-control" readonly style="font-family: var(--font-mono); font-weight: 700; background: #f8fafc; letter-spacing: 1px;">
+                        <button type="button" class="btn btn-secondary btn-sm" onclick="copyMachineId(this)" data-i18n="btn_copy">Copier</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 14px;">
+                    <label data-i18n="lic_key_input_label">Clé de Licence</label>
+                    <input type="text" id="licModalKeyInput" class="form-control" placeholder="YYYYMMDD-..." maxlength="115" style="font-family: var(--font-mono); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;">
+                    <span class="hint" data-i18n="lic_key_hint">Format : YYYYMMDD-&lt;SIGNATURE&gt; (clé signée fournie par l'éditeur)</span>
+                </div>
+            </div>
+            <div class="modal-footer flex-between">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('licenseModal')" data-i18n="close">Fermer</button>
+                <button type="button" class="btn btn-primary" id="btnSubmitLicenseKey" onclick="handleActivateLicenseFromModal()">
+                    <span>🔑</span> <span data-i18n="btn_activate">Activer la Licence</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unified Onboarding Modal (First-Launch Setup Wizard) -->
+    <div id="onboardingModal" class="modal-backdrop">
+        <div class="modal-dialog modal-lg onboarding-dialog">
+            <div class="modal-header flex-between">
+                <div class="flex-align-center gap-12">
+                    <img src="assets/logo.svg" alt="Logo" style="width: 38px; height: 38px;">
+                    <div>
+                        <h3 data-i18n="onboarding_title">Bienvenue sur CCTV Manager Pro</h3>
+                        <span class="text-muted" style="font-size: 0.8rem;" data-i18n="onboarding_sub">Configuration initiale & mise en conformité réglementaire</span>
+                    </div>
+                </div>
+                <!-- Step indicator dots -->
+                <div class="wizard-steps-indicator">
+                    <div class="step-dot active" data-step="1"><span>1</span></div>
+                    <div class="step-line"></div>
+                    <div class="step-dot" data-step="2"><span>2</span></div>
+                    <div class="step-line"></div>
+                    <div class="step-dot" data-step="3"><span>3</span></div>
+                    <div class="step-line"></div>
+                    <div class="step-dot" data-step="4"><span>4</span></div>
+                </div>
+            </div>
+
+            <div class="modal-body onboarding-body">
+                <!-- STEP 1: Welcome & Compliance Overview -->
+                <div class="onboarding-step-pane active" id="onboardingStep1">
+                    <div class="onboarding-hero">
+                        <div class="hero-badge" data-i18n="reg_conform_badge">Conforme Décret Exécutif 16-61 & JORADP</div>
+                        <h2 data-i18n="welcome_hero_title">Gestion Intégrale de vos Équipements & Dossiers Réglementaires</h2>
+                        <p data-i18n="welcome_hero_desc">CCTV Manager Pro automatise la traçabilité des caméras par code-barres et édite instantanément les documents officiels conformes à la réglementation algérienne.</p>
+                    </div>
+
+                    <div class="compliance-features-grid">
+                        <div class="feature-card">
+                            <div class="feature-icon">📑</div>
+                            <h4 data-i18n="feat_dossier1_title">1er Dossier - Acquisition</h4>
+                            <p data-i18n="feat_dossier1_desc">Annexes 1 et 5 (J.O #54), Agrément installateur tamponné et PV d'installation officiel.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🛡️</div>
+                            <h4 data-i18n="feat_dossier2_title">2ème Dossier - Exploitation</h4>
+                            <p data-i18n="feat_dossier2_desc">Annexe 3 étendue (15 lignes) et Annexe 8 (Engagement de non-connexion Internet Décret 16-61).</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">📷</div>
+                            <h4 data-i18n="feat_scanner_title">Inventaire & Code-Barres</h4>
+                            <p data-i18n="feat_scanner_desc">Numérisation ultra-rapide des numéros de série par douchette code-barres et gestion des stocks.</p>
+                        </div>
+                        <div class="feature-card">
+                            <div class="feature-icon">🔏</div>
+                            <h4 data-i18n="feat_seal_title">Tamponnage Numérique</h4>
+                            <p data-i18n="feat_seal_desc">Incrustation vectorielle haute précision de votre cachet officiel et signature sur chaque page.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 2: License Activation Gate -->
+                <div class="onboarding-step-pane" id="onboardingStep2">
+                    <div class="step-header">
+                        <h3 data-i18n="step2_title">Activation de la Licence du Poste</h3>
+                        <p class="text-muted" data-i18n="step2_desc">Ce logiciel est protégé par une signature matérielle liée à votre machine. Veuillez activer votre licence pour continuer.</p>
+                    </div>
+
+                    <div id="onboardingLicAlert" class="alert-box alert-warning" style="margin-top: 14px;">
+                        <div class="alert-icon">⚠️</div>
+                        <div class="alert-content">
+                            <strong data-i18n="lic_req_title">Licence Requise</strong>
+                            <p data-i18n="lic_req_desc" style="margin: 0; font-size: 0.82rem;">Transmettez votre identifiant machine à votre fournisseur pour obtenir votre clé d'activation.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label data-i18n="lic_machine_id">Identifiant Unique Machine</label>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <input type="text" id="onboardingMachineId" class="form-control" readonly style="font-family: var(--font-mono); font-weight: 800; font-size: 1.05rem; letter-spacing: 2px; color: #4338ca; background: #f8fafc; text-align: center;">
+                            <button type="button" class="btn btn-secondary" onclick="copyMachineId(this)" data-i18n="btn_copy">Copier</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 16px;">
+                        <label data-i18n="lic_key_input_label">Clé d'Activation Reçue</label>
+                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                            <input type="text" id="onboardingKeyInput" class="form-control" placeholder="YYYYMMDD-..." maxlength="115" style="font-family: var(--font-mono); font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;">
+                            <button type="button" class="btn btn-primary" id="btnOnboardingActivate" onclick="handleOnboardingActivate()">
+                                <span>🔑</span> <span data-i18n="btn_activate">Activer</span>
+                            </button>
+                        </div>
+                        <span class="hint" data-i18n="lic_key_hint">Format : YYYYMMDD-&lt;SIGNATURE&gt; (clé signée fournie par l'éditeur)</span>
+                    </div>
+
+                    <div id="onboardingLicSuccessBox" class="alert-box alert-success" style="display: none; margin-top: 16px;">
+                        <div class="alert-icon">✓</div>
+                        <div class="alert-content">
+                            <strong data-i18n="lic_success_title">Licence Validée !</strong>
+                            <p id="onboardingLicSuccessText" style="margin: 0; font-size: 0.82rem;">Votre licence est activée.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Installer Profile & Digital Stamp -->
+                <div class="onboarding-step-pane" id="onboardingStep3">
+                    <div class="step-header">
+                        <h3 data-i18n="step3_title">Profil de l'Entreprise d'Installation</h3>
+                        <p class="text-muted" data-i18n="step3_desc">Ces informations légales seront apposées sur les annexes réglementaires et PV d'installation.</p>
+                    </div>
+
+                    <div class="form-grid" style="margin-top: 16px;">
+                        <div class="form-group span-2">
+                            <label data-i18n="installer_company_name">Nom de l'Entreprise d'Installation: *</label>
+                            <input type="text" id="onb_inst_company" class="form-control" placeholder="ex: SARL SECURITE PLUS ALGERIE">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_name">Nom du Responsable / Installateur:</label>
+                            <input type="text" id="onb_inst_name" class="form-control" placeholder="ex: Amine Benali">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_phone">Téléphone:</label>
+                            <input type="text" id="onb_inst_phone" class="form-control" placeholder="ex: 0550 12 34 56">
+                        </div>
+                        <div class="form-group span-2">
+                            <label data-i18n="installer_city">Ville / Wilaya:</label>
+                            <input type="text" id="onb_inst_city" class="form-control" placeholder="ex: الجزائر أو البليدة">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_accreditation_ref">N° d'Agrément Installateur:</label>
+                            <input type="text" id="onb_inst_acc_ref" class="form-control" placeholder="ex: 269 / م.ع.ع.ش.ق / 2025">
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_accreditation_date">Date de l'Agrément:</label>
+                            <input type="text" id="onb_inst_acc_date" class="form-control" placeholder="ex: 29/04/2025">
+                        </div>
+                        <div class="form-group span-2">
+                            <label data-i18n="installer_agreement_doc">Document Officiel d'Agrément (PDF ou Image, 1 ou 2 pages)</label>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                <span id="onbAgreementBadge" class="badge badge-warning" style="font-size: 0.8rem; padding: 6px 12px;" data-i18n="agreement_doc_badge_none">Aucun document chargé</span>
+                                <input type="file" id="onbAgreementFileInput" accept="application/pdf,image/*" style="display: none;" onchange="handleOnbAgreementChosen(event)">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('onbAgreementFileInput').click()" data-i18n="btn_choose">Choisir Document...</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="clearOnbAgreementDoc()" title="Supprimer">✕</button>
+                            </div>
+                            <span class="text-muted" style="font-size: 0.76rem; display: block; margin-top: 4px;" data-i18n="installer_agreement_hint">Chargez votre agrément officiel (1 ou 2 pages). La mention réglementaire « تسلم نسخة واحدة إلى السيد... » et le cachet seront apposés au bas de chaque page en conservant le format A4.</span>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_seal_image">Cachet Officiel (PNG/JPG)</label>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                <div id="onbSealThumbWrap" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden;">
+                                    <img id="onbSealThumbImg" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                                    <span id="onbSealThumbEmpty" style="font-size: 1.1rem; color: #94a3b8;">⭕</span>
+                                </div>
+                                <input type="file" id="onbSealFileInput" accept="image/*" style="display: none;" onchange="handleOnbSealChosen(event)">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('onbSealFileInput').click()" data-i18n="btn_choose">Choisir</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="clearOnbSealImage()" title="Supprimer">✕</button>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label data-i18n="installer_signature_image">Signature Numérique (PNG/JPG)</label>
+                            <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                                <div id="onbSigThumbWrap" style="width: 44px; height: 44px; border: 1.5px dashed #cbd5e1; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: #f8fafc; overflow: hidden;">
+                                    <img id="onbSigThumbImg" style="display: none; width: 100%; height: 100%; object-fit: contain;">
+                                    <span id="onbSigThumbEmpty" style="font-size: 1.1rem; color: #94a3b8;">✍️</span>
+                                </div>
+                                <input type="file" id="onbSigFileInput" accept="image/*" style="display: none;" onchange="handleOnbSigChosen(event)">
+                                <button type="button" class="btn btn-secondary btn-sm" onclick="document.getElementById('onbSigFileInput').click()" data-i18n="btn_choose">Choisir</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="clearOnbSigImage()" title="Supprimer">✕</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Storage Directory & Quickstart -->
+                <div class="onboarding-step-pane" id="onboardingStep4">
+                    <div class="step-header">
+                        <h3 data-i18n="step4_title">Emplacement des Dossiers & Démarrage</h3>
+                        <p class="text-muted" data-i18n="step4_desc">Dernière étape ! Définissez l'emplacement racine où seront générés automatiquement les dossiers des clients.</p>
+                    </div>
+
+                    <div class="card" style="margin-top: 16px; background: #f8fafc; border: 1.5px solid #e2e8f0;">
+                        <label data-i18n="current_dossier_folder" style="font-weight: 700;">Répertoire Racine des Dossiers Clients</label>
+                        <div style="display: flex; gap: 8px; margin-top: 8px;">
+                            <input type="text" id="onb_dossier_root" class="form-control" placeholder="Dossier racine..." readonly style="font-family: var(--font-mono); font-weight: 600; background: #ffffff;">
+                            <button type="button" class="btn btn-secondary" onclick="handleSelectOnbDossierDir()" data-i18n="browse_btn">
+                                📂 Parcourir
+                            </button>
+                        </div>
+                        <span class="hint" data-i18n="onb_dossier_hint">Sous-dossiers automatiques créés pour chaque client : <code>&lt;Client&gt;/1er dossier/</code> et <code>&lt;Client&gt;/2eme dossier/</code>.</span>
+                    </div>
+
+                    <div class="card" style="margin-top: 14px; background: #f0fdf4; border: 1.5px solid #bbf7d0;">
+                        <label class="switch-toggle" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="onb_seed_demo" checked>
+                            <div>
+                                <strong data-i18n="seed_demo_label">Charger des données de démonstration (Recommandé)</strong>
+                                <p style="margin: 2px 0 0; font-size: 0.8rem; color: #166534;" data-i18n="seed_demo_desc">Injecte des modèles de caméras courants (Hikvision, Dahua), des numéros de série et un client exemple pour explorer immédiatement l'application.</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer flex-between">
+                <button type="button" class="btn btn-secondary" id="btnOnbPrev" onclick="onbPrevStep()" style="display: none;">
+                    ← <span data-i18n="btn_prev">Précédent</span>
+                </button>
+                <div style="display: flex; gap: 10px;">
+                    <button type="button" class="btn btn-primary" id="btnOnbNext" onclick="onbNextStep()">
+                        <span data-i18n="btn_next">Suivant</span> →
+                    </button>
+                </div>
             </div>
         </div>
     </div>

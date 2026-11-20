@@ -323,7 +323,7 @@ def test_forensic_check5_authentic_bidi_shaping():
 # CHECK 6: End-to-End API Bridge & Zero-Facade Integration
 # =====================================================================
 
-def test_forensic_check6_api_bridge_real_database_and_pdf_integration(temp_dir, temp_db, pdf_gen):
+def test_forensic_check6_api_bridge_real_database_and_pdf_integration(temp_dir, temp_db, pdf_gen, monkeypatch):
     """
     Verify JsApi endpoints integrate with real DatabaseManager and PDFGenerator:
     - No mock return values.
@@ -331,6 +331,20 @@ def test_forensic_check6_api_bridge_real_database_and_pdf_integration(temp_dir, 
     - get_document_preview returns live preview payload for database client.
     - generate_client_dossier writes real PDF files to dossiers/<Client>/1er_dossier/.
     """
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    import license_manager
+
+    priv = Ed25519PrivateKey.generate()
+    pub_b64 = base64.b64encode(
+        priv.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    ).decode("ascii")
+    monkeypatch.setattr(license_manager, "PUBLIC_KEY_B64", pub_b64)
+    monkeypatch.setattr(license_manager.verify_license, "__defaults__", (pub_b64,))
+    mid = license_manager.get_machine_id()
+    sig_b32 = base64.b32encode(priv.sign(f"{mid}:9999-12-31".encode("utf-8"))).decode("ascii").rstrip("=")
+    temp_db.save_license_key(f"99991231-{sig_b32}")
+
     bridge = JsApi(db=temp_db, pdf_gen=pdf_gen)
 
     # Add model

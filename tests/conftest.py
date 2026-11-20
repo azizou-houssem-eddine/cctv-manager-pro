@@ -50,8 +50,25 @@ def pdf_gen():
 
 
 @pytest.fixture
-def api_bridge(temp_db, pdf_gen):
-    """Provides an initialized JsApi instance backed by isolated temp db."""
+def api_bridge(temp_db, pdf_gen, monkeypatch):
+    """Provides an initialized JsApi instance backed by isolated temp db with valid ephemeral Ed25519 test license."""
+    import base64
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+    import license_manager
+    from license_manager import get_machine_id
+
+    priv = Ed25519PrivateKey.generate()
+    pub_b64 = base64.b64encode(
+        priv.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw)
+    ).decode("ascii")
+    monkeypatch.setattr(license_manager, "PUBLIC_KEY_B64", pub_b64)
+    monkeypatch.setattr(license_manager.verify_license, "__defaults__", (pub_b64,))
+
+    mid = get_machine_id()
+    msg = f"{mid}:9999-12-31".encode("utf-8")
+    sig_b32 = base64.b32encode(priv.sign(msg)).decode("ascii").rstrip("=")
+    temp_db.save_license_key(f"99991231-{sig_b32}")
     return JsApi(db=temp_db, pdf_gen=pdf_gen)
 
 
